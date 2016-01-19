@@ -52,6 +52,17 @@ sub cprint {
     print "\033[32m" . $str . "\033[0m";
 }
 
+sub remove_node {
+    my ($node) = @_;
+    my $parent = $node->parent;
+    next unless $parent;
+    foreach my $branch (@{$parent->branches}, 'next') {
+        my $child = $parent->{$branch};
+        next unless ($child && $child == $node);
+        $parent->{$branch} = $node->next;
+    }
+}
+
 # Compiler::Parser::Node::Array
 # Compiler::Parser::Node::ArrayRef
 # Compiler::Parser::Node::Block
@@ -85,6 +96,8 @@ sub cprint {
 
 my $INDENT = '    ';
 
+my $skip_nodes = [];
+
 sub traverse {
     my ($node) = @_;
     my $current = $node;
@@ -107,6 +120,10 @@ sub traverse {
             my $right = $current->right;
             my $name = $token->name;
             my $data = $token->data;
+
+            # if Assign branch is compiled as function parameters, skip this loop.
+            my $skip = 0;
+
             if ($token->name eq 'Comma') {
                 $data = $token->data . " ";
             } elsif ($token->name eq 'AlphabetOr') {
@@ -114,6 +131,11 @@ sub traverse {
             } elsif ($token->name eq 'Arrow') {
                 $data = ' : ';
             } elsif ($token->name eq 'Assign') {
+                for my $skip_node (@$skip_nodes) {
+                    if ($current->left == $skip_node) {
+                        $skip = 1;
+                    }
+                }
                 $data = " " . $token->data . " ";
             } elsif ($token->name eq 'Pointer') {
                 if (ref($right) eq 'Compiler::Parser::Node::FunctionCall' &&
@@ -128,7 +150,8 @@ sub traverse {
                 cprint(ref($current) . ", " . $name . ": " . $data . "\n");
             }
 
-            if ($data eq 'new') {
+            if ($skip) {
+            } elsif ($data eq 'new') {
                 print $data . ' ';
                 traverse($left);
                 print '(';
@@ -147,7 +170,10 @@ sub traverse {
             my $name = $token->name;
             my $data = $token->data;
             my $trimmed = substr($data, 2);
-            if ($name eq 'ShortArrayDereference') {
+            # if ($name eq 'ArrayDereference') {
+            if ($name eq 'HashDereference') {
+                traverse($current->expr);
+            } elsif ($name eq 'ShortArrayDereference') {
                 my $trimmed = substr($data, 2);
                 print "...${trimmed}";
             } elsif ($name eq 'ShortHashDereference') {
@@ -163,7 +189,23 @@ sub traverse {
         } elsif ($pkg eq 'Compiler::Parser::Node::Function') {
             my $body = $current->body;
             my $function_name = $token->data;
-            print "function ${function_name}() {";
+
+            # parameter detection
+            # TODO: shift operator, multiple assignment.
+            my $parameters;
+            if ($body) {
+                my $assign = search($body, {
+                    ref => 'Compiler::Parser::Node::Branch',
+                    name => 'Assign'
+                });
+                if ($assign && $assign->right->token->name eq 'ArgumentArray') {
+                    $parameters = $assign->left;
+                    push(@$skip_nodes, $parameters);
+                }
+            }
+            print "function ${function_name}(";
+            traverse($parameters);
+            print ") {";
             if ($body) {
                 print "\n";
                 print $INDENT x ($depth + 1);
@@ -224,6 +266,10 @@ sub traverse {
                 print "arguments";
             } elsif ($name eq 'LocalVar') {
                 print "var " . substr($data, 1);
+            } elsif ($name eq 'GlobalVar') {
+                print substr($data, 1);
+            } elsif ($name eq 'GlobalHashVar') {
+                print substr($data, 1);
             } elsif ($name eq 'Key') {
                 print '"' . $data . '"';
             } elsif ($name eq 'Var') {
@@ -234,6 +280,8 @@ sub traverse {
                     print substr($data, 1);
             } elsif ($name eq 'String') {
                 print '"' . $data . '"';
+            } elsif ($name eq 'RawString') {
+                print "'" . $data . "'";
             } else {
                 cprint(ref($current) . ", " . $name . ": " . $data . "\n");
             }
@@ -244,26 +292,32 @@ sub traverse {
 
         } elsif ($pkg eq 'Compiler::Parser::Node::Module') {
             my $module_name = $token->data;
-            if ($module_name ~~ ['strict', 'warnings', 'base', 'parent']) { }
+            if ($module_name ~~ ['strict', 'warnings']) { }
             elsif ($module_name eq 'constant') {
                 cprint 'TODO'
             }
-            else {
-                print "import { ${module_name} } from '${module_name}'\n";
+            elsif ($module_name ~~ ['base', 'parent']) {
+                my $base_name = $current->args->expr->token->data;
+                my $path = $base_name;
+                $path =~ s/::/\//g;
+                $base_name =~ s/.+:://g;
+                print "import { ${base_name} } from '${path}'";
+            } else {
+                my $path = $module_name;
+                $path =~ s/::/\//;
+                print "import { ${module_name} } from '${path}'\n";
             }
 
         } elsif ($pkg eq 'Compiler::Parser::Node::Package') {
             my $class_name = $token->data;
-            $current->find()
-            my $base = search($current, {
-                ref => 'Compiler::Parser::Node::Module',
-                data => 'base',
-            }) || search($current, {
-                ref => 'Compiler::Parser::Node::Module',
-                data => 'parent',
-            });
+            $class_name =~ s/.+:://g;
+            # TODO: support Mixin.
+            my ($base) = grep {
+                $_->data ~~ ['base', 'parent']
+            } @{$current->find(node => 'Module')};
             if ($base) {
                 my $base_name = $base->args->expr->token->data;
+                $base_name =~ s/.+:://g;
                 print "class ${class_name} extends ${base_name} {\n";
             } else {
                 print "class ${class_name} {\n";
