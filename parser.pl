@@ -5,16 +5,14 @@ use Data::Dumper;
 use Compiler::Parser;
 use Compiler::Parser::AST::Renderer;
 
+use Compiler::Parser::Node::ArrayRef;
+
 my $filename = $ARGV[0];
 open(my $fh, "<", $filename) or die("Cannot open $filename: $!");
 my $script = do { local $/; <$fh> };
 
 my $lexer  = Compiler::Lexer->new($filename);
 my $tokens = $lexer->tokenize($script);
-
-
-
-
 my $parser = Compiler::Parser->new();
 my $ast = $parser->parse($tokens);
 #warn Dumper $ast;
@@ -49,7 +47,7 @@ sub search {
 
 sub cprint {
     my ($str) = @_;
-    print "\033[32m" . $str . "\033[0m";
+    print "\033[32m /* " . $str . " */ \033[0m";
 }
 
 sub remove_node {
@@ -63,40 +61,40 @@ sub remove_node {
     }
 }
 
-# Compiler::Parser::Node::Array
-# Compiler::Parser::Node::ArrayRef
-# Compiler::Parser::Node::Block
-# Compiler::Parser::Node::Branch
-# Compiler::Parser::Node::CodeDereference
-# Compiler::Parser::Node::ControlStmt
-# Compiler::Parser::Node::Dereference
-# Compiler::Parser::Node::DoStmt
-# Compiler::Parser::Node::ElseStmt
-# Compiler::Parser::Node::ForStmt
-# Compiler::Parser::Node::ForeachStmt
-# Compiler::Parser::Node::Function
-# Compiler::Parser::Node::FunctionCall
-# Compiler::Parser::Node::Handle
-# Compiler::Parser::Node::HandleRead
-# Compiler::Parser::Node::Hash
-# Compiler::Parser::Node::HashRef
-# Compiler::Parser::Node::IfStmt
-# Compiler::Parser::Node::Label
-# Compiler::Parser::Node::Leaf
-# Compiler::Parser::Node::List
-# Compiler::Parser::Node::Module
-# Compiler::Parser::Node::Package
-# Compiler::Parser::Node::RegPrefix
-# Compiler::Parser::Node::RegReplace
-# Compiler::Parser::Node::Regexp
-# Compiler::Parser::Node::Return
-# Compiler::Parser::Node::SingleTermOperator
-# Compiler::Parser::Node::ThreeTermOperator
-# Compiler::Parser::Node::WhileStmt
+sub shift_comma_branch {
+    my ($branch) = @_; # Node::Branch / Comma
+    if (ref($branch) ne 'Compiler::Parser::Node::Branch') {
+        return {
+            new_root => $branch,
+            most_left => undef
+        }
+    }
+    my $most_left;
+    my $shift; $shift = sub {
+        my ($branch) = @_;
+        if (ref($branch->left) eq 'Compiler::Parser::Node::Branch') {
+            my $new_left = $shift->($branch->left);
+            if ($new_left) {
+                $branch->{left} = $new_left;
+            }
+            return;
+        } else {
+            $most_left = $branch->left;
+            return $branch->right;
+        }
+    };
+    # return new root node too.
+    return {
+        new_root => $shift->($branch) || $branch,
+        most_left => $most_left
+    };
+}
 
 my $INDENT = '    ';
 
 my $skip_nodes = [];
+my $current_package = '';
+my $current_class = '';
 
 sub traverse {
     my ($node) = @_;
@@ -109,6 +107,14 @@ sub traverse {
 
         if ($pkg eq '') {
         } elsif ($pkg eq 'Compiler::Parser::Node::Array') {
+            my $idx = $current->idx;
+            my $name = substr($token->data, 1);
+            if ($name eq '_') {
+                print 'arguments';
+            } else {
+                print $name;
+            }
+            traverse($idx);
         } elsif ($pkg eq 'Compiler::Parser::Node::ArrayRef') {
             my $data_node = $current->data_node;
             print '[';
@@ -128,24 +134,61 @@ sub traverse {
                 $data = $token->data . " ";
             } elsif ($token->name eq 'AlphabetOr') {
                 $data = " || ";
+            } elsif ($token->name eq 'And') {
+                $data = " && ";
             } elsif ($token->name eq 'Arrow') {
                 $data = ' : ';
             } elsif ($token->name eq 'Assign') {
                 for my $skip_node (@$skip_nodes) {
-                    if ($current->left == $skip_node) {
+                    if ($left == $skip_node) {
                         $skip = 1;
                     }
                 }
+                if ($left->token->name eq 'LocalHashVar' &&
+                    ref($right) eq 'Compiler::Parser::Node::List'
+                    ) {
+                    my $arrayref = bless +{
+                        data => $right,
+                        indent => $right->indent
+                    }, 'Compiler::Parser::Node::HashRef';
+                    $right->{parent} = $arrayref;
+                    $right = $arrayref;
+                }
+                if ($left->token->name eq 'LocalArrayVar' &&
+                    ref($right) eq 'Compiler::Parser::Node::List'
+                    ) {
+                    my $arrayref = bless +{
+                        data => $right,
+                        indent => $right->indent
+                    }, 'Compiler::Parser::Node::ArrayRef';
+                    $right->{parent} = $arrayref;
+                    $right = $arrayref;
+                }
                 $data = " " . $token->data . " ";
+            } elsif ($name eq 'EqualEqual') {
+                $data = " == ";
+            } elsif ($token->name eq 'Or') {
+                $data = " || ";
             } elsif ($token->name eq 'Pointer') {
                 if (ref($right) eq 'Compiler::Parser::Node::FunctionCall' &&
                     $right->token->data eq 'new') {
                     $data = 'new';
+                } elsif (ref($right) eq 'Compiler::Parser::Node::ArrayRef') {
+                    $data = "";
+                } elsif (ref($right) eq 'Compiler::Parser::Node::HashRef') {
+                    my $data_node = $right->data_node;
+                    $skip = 1;
+                    traverse($left);
+                    print '[';
+                    traverse($data_node);
+                    print ']';
                 } else {
                     $data = ".";
                 }
             } elsif ($token->name eq 'StringEqual') {
                 $data = " === ";
+            } elsif ($token->name eq 'StringAdd') {
+                $data = " + ";
             } else {
                 cprint(ref($current) . ", " . $name . ": " . $data . "\n");
             }
@@ -170,12 +213,12 @@ sub traverse {
             my $name = $token->name;
             my $data = $token->data;
             my $trimmed = substr($data, 2);
-            # if ($name eq 'ArrayDereference') {
-            if ($name eq 'HashDereference') {
+            if ($name eq 'ArrayDereference') {
+                traverse($current->expr);
+            } elsif ($name eq 'HashDereference') {
                 traverse($current->expr);
             } elsif ($name eq 'ShortArrayDereference') {
-                my $trimmed = substr($data, 2);
-                print "...${trimmed}";
+                print $trimmed;
             } elsif ($name eq 'ShortHashDereference') {
                 print $trimmed;
             } else {
@@ -193,17 +236,50 @@ sub traverse {
             # parameter detection
             # TODO: shift operator, multiple assignment.
             my $parameters;
+            my $method = '';
             if ($body) {
                 my $assign = search($body, {
                     ref => 'Compiler::Parser::Node::Branch',
                     name => 'Assign'
                 });
-                if ($assign && $assign->right->token->name eq 'ArgumentArray') {
-                    $parameters = $assign->left;
+                if ($assign &&
+                    $assign->right->token->name eq 'ArgumentArray' &&
+                    ref($assign->left) eq 'Compiler::Parser::Node::List') {
+                    $parameters = $assign->left; # Node::List
+
                     push(@$skip_nodes, $parameters);
+
+                    my $comma = $parameters->data_node; # Node::Branch / Comma
+                    my $parent_comma = $comma;
+                    my $most_left;
+                    if (ref($parent_comma) ne 'Compiler::Parser::Node::Branch') {
+                        $most_left = $parent_comma;
+                    } else {
+                        while (ref($parent_comma->left) eq 'Compiler::Parser::Node::Branch') {
+                            $parent_comma = $parent_comma->left;
+                        }
+                        $most_left = $parent_comma->left;
+                    }
+
+                    if ($most_left->token->data eq '$self') {
+                        $parameters->{data} =
+                            shift_comma_branch($parameters->data_node)->{new_root};
+                        $method = 'instance';
+                    }
+                    if ($most_left->token->data eq '$class') {
+                        $parameters->{data} =
+                            shift_comma_branch($parameters->data_node)->{new_root};
+                        $method = 'class';
+                    }
                 }
             }
-            print "function ${function_name}(";
+            if ($method eq 'instance') {
+                print "${function_name}(";
+            } elsif ($method eq 'class') {
+                print "static ${function_name}(";
+            } else {
+                print "function ${function_name}(";
+            }
             traverse($parameters);
             print ") {";
             if ($body) {
@@ -223,12 +299,20 @@ sub traverse {
                 if ($function_name eq 'print') { $function_name = 'console.log'; }
                 if ($function_name eq 'warn')  { $function_name = 'console.warn'; }
                 if ($function_name eq 'ref')  { $function_name = 'typeof'; }
-                # if ($function_name ~~ ['pop', 'push'])  {
-                #     my $obj = $args;
-                #     $args = delete $args->{next};
-                #     traverse($obj);
-                #     print ".";
-                # }
+                if ($function_name eq 'pop')  {
+                    # pop take just one parameter.
+                    traverse($args);
+                    print '.';
+                    $args = undef;
+                }
+                if ($function_name eq 'push')  {
+                    # 'push' take at least two parameter.
+                    # so $args is Node::Branch / Comma.
+                    my $ret = shift_comma_branch($args);
+                    $args = $ret->{new_root};
+                    traverse($ret->{most_left});
+                    print '.';
+                }
             }
             print "$function_name(";
             traverse($args);
@@ -237,7 +321,9 @@ sub traverse {
         # } elsif ($pkg eq 'Compiler::Parser::Node::Handle') {
         # } elsif ($pkg eq 'Compiler::Parser::Node::HandleRead') {
         # } elsif ($pkg eq 'Compiler::Parser::Node::Hash') {
+            
         } elsif ($pkg eq 'Compiler::Parser::Node::HashRef') {
+            # hash ref literal
             my $data_node = $current->data_node;
             print '{';
             traverse($data_node);
@@ -266,18 +352,34 @@ sub traverse {
                 print "arguments";
             } elsif ($name eq 'LocalVar') {
                 print "var " . substr($data, 1);
+            } elsif ($name eq 'LocalArrayVar') {
+                print "var " . substr($data, 1);
+            } elsif ($name eq 'LocalHashVar') {
+                print "var " . substr($data, 1);
             } elsif ($name eq 'GlobalVar') {
                 print substr($data, 1);
             } elsif ($name eq 'GlobalHashVar') {
                 print substr($data, 1);
             } elsif ($name eq 'Key') {
                 print '"' . $data . '"';
+            } elsif ($name eq 'HashVar') {
+                print substr($data, 1);
+            } elsif ($name eq 'ArrayVar') {
+                print substr($data, 1);
             } elsif ($name eq 'Var') {
-                # if ($data eq '$self') {
-                #     print "this\n";
-                # } else {
-                # }
+                if ($data eq '$self') {
+                    print "this";
+                } elsif ($data eq '$class') {
+                    print $current_class;
+                } else {
                     print substr($data, 1);
+                }
+            } elsif ($name eq 'SpecificKeyword') {
+                if ($data eq '__PACKAGE__') {
+                    print $current_class;
+                } else {
+                    cprint(ref($current) . ", " . $name . ": " . $data . "\n");
+                }
             } elsif ($name eq 'String') {
                 print '"' . $data . '"';
             } elsif ($name eq 'RawString') {
@@ -292,9 +394,9 @@ sub traverse {
 
         } elsif ($pkg eq 'Compiler::Parser::Node::Module') {
             my $module_name = $token->data;
-            if ($module_name ~~ ['strict', 'warnings']) { }
+            if ($module_name ~~ ['strict', 'warnings', 'utf8']) { }
             elsif ($module_name eq 'constant') {
-                cprint 'TODO'
+                cprint 'TODO. "use constant" to const';
             }
             elsif ($module_name ~~ ['base', 'parent']) {
                 my $base_name = $current->args->expr->token->data;
@@ -304,8 +406,9 @@ sub traverse {
                 print "import { ${base_name} } from '${path}'";
             } else {
                 my $path = $module_name;
-                $path =~ s/::/\//;
-                print "import { ${module_name} } from '${path}'\n";
+                $path =~ s/::/\//g;
+                $module_name =~ s/.+:://g;
+                print "import { ${module_name} } from '${path}'";
             }
 
         } elsif ($pkg eq 'Compiler::Parser::Node::Package') {
@@ -322,6 +425,9 @@ sub traverse {
             } else {
                 print "class ${class_name} {\n";
             }
+            $current_class = $class_name;
+            $current_package = $class_name;
+
         # } elsif ($pkg eq 'Compiler::Parser::Node::RegPrefix') {
         # } elsif ($pkg eq 'Compiler::Parser::Node::RegReplace') {
         # } elsif ($pkg eq 'Compiler::Parser::Node::Regexp') {
@@ -329,7 +435,8 @@ sub traverse {
             my $body = $current->body;
             print 'return ';
             traverse($body);
-        # } elsif ($pkg eq 'Compiler::Parser::Node::SingleTermOperator') {
+        } elsif ($pkg eq 'Compiler::Parser::Node::SingleTermOperator') {
+            print $token->data;
         # } elsif ($pkg eq 'Compiler::Parser::Node::ThreeTermOperator') {
         # } elsif ($pkg eq 'Compiler::Parser::Node::WhileStmt') {
         } else {
