@@ -98,7 +98,7 @@ my $current_package = '';
 my $current_class = '';
 
 sub traverse {
-    my ($node) = @_;
+    my ($node, $imports) = @_;
     my $current = $node;
     my @block;
     while ($current) {
@@ -117,16 +117,16 @@ sub traverse {
                     push @sentence, 'this';
                 } else {
                     push @sentence, 'arguments';
-                    push @sentence, @{traverse($idx)};
+                    push @sentence, @{traverse($idx, $imports)};
                 }
             } else {
                 push @sentence, $name;
-                push @sentence, @{traverse($idx)};
+                push @sentence, @{traverse($idx, $imports)};
             }
         } elsif ($pkg eq 'Compiler::Parser::Node::ArrayRef') {
             my $data_node = $current->data_node;
             push @sentence, '[';
-            push @sentence, @{traverse($data_node)};
+            push @sentence, @{traverse($data_node, $imports)};
             push @sentence, ']';
         # } elsif ($pkg eq 'Compiler::Parser::Node::Block') {
         } elsif ($pkg eq 'Compiler::Parser::Node::Branch') {
@@ -186,9 +186,9 @@ sub traverse {
                 } elsif (ref($right) eq 'Compiler::Parser::Node::HashRef') {
                     my $data_node = $right->data_node;
                     $skip = 1;
-                    push @sentence, @{traverse($left)};
+                    push @sentence, @{traverse($left, $imports)};
                     push @sentence, '[';
-                    push @sentence, @{traverse($data_node)};
+                    push @sentence, @{traverse($data_node, $imports)};
                     push @sentence, ']';
                 } else {
                     $data = ".";
@@ -204,15 +204,15 @@ sub traverse {
             if ($skip) {
             } elsif ($data eq 'new') {
                 push @sentence, $data . ' ';
-                push @sentence, @{traverse($left)};
+                push @sentence, @{traverse($left, $imports)};
                 push @sentence, '(';
                 my $args = $right->{args}->[0];
-                push @sentence, @{traverse($right->{args}->[0])};
+                push @sentence, @{traverse($right->{args}->[0], $imports)};
                 push @sentence, ")";
             } else {
-                push @sentence, @{traverse($left)};
+                push @sentence, @{traverse($left, $imports)};
                 push @sentence, $data;
-                push @sentence, @{traverse($right)};
+                push @sentence, @{traverse($right, $imports)};
             }
 
         # } elsif ($pkg eq 'Compiler::Parser::Node::CodeDereference') {
@@ -222,9 +222,9 @@ sub traverse {
             my $data = $token->data;
             my $trimmed = substr($data, 2);
             if ($name eq 'ArrayDereference') {
-                push @sentence, @{traverse($current->expr)};
+                push @sentence, @{traverse($current->expr, $imports)};
             } elsif ($name eq 'HashDereference') {
-                push @sentence, @{traverse($current->expr)};
+                push @sentence, @{traverse($current->expr, $imports)};
             } elsif ($name eq 'ShortArrayDereference') {
                 push @sentence, $trimmed;
             } elsif ($name eq 'ShortHashDereference') {
@@ -288,12 +288,12 @@ sub traverse {
             } else {
                 push @sentence, "function ${function_name}(";
             }
-            push @sentence, @{traverse($parameters)};
+            push @sentence, @{traverse($parameters, $imports)};
             push @sentence, ") {";
             if ($body) {
                 push @sentence, "\n";
                 push @sentence, $INDENT x ($depth + 1);
-                push @sentence, @{traverse($body)};
+                push @sentence, @{traverse($body, $imports)};
             }
             push @sentence, "\n";
             push @sentence, $INDENT x ($depth);
@@ -309,7 +309,7 @@ sub traverse {
                 if ($function_name eq 'ref')  { $function_name = 'typeof'; }
                 if ($function_name eq 'pop')  {
                     # pop take just one parameter.
-                    push @sentence, @{traverse($args)};
+                    push @sentence, @{traverse($args, $imports)};
                     push @sentence, '.';
                     $args = undef;
                 }
@@ -318,7 +318,7 @@ sub traverse {
                     # so $args is Node::Branch / Comma.
                     my $ret = shift_comma_branch($args);
                     $args = $ret->{new_root};
-                    push @sentence, @{traverse($ret->{most_left})};
+                    push @sentence, @{traverse($ret->{most_left}, $imports)};
                     push @sentence, '.';
                 }
                 # if ($function_name eq 'join')  {
@@ -334,14 +334,14 @@ sub traverse {
                 # #     my $args = $ret->{most_left}; # separater.
 
                 # #     if ($ret->{new_root}) {
-                # #         push @sentence, @{traverse($ret->{new_root})};
+                # #         push @sentence, @{traverse($ret->{new_root}, $imports)};
                 # #     } else {
                 # #         push @sentence, '[].'
                 # #     }
                 # }
             }
             push @sentence, "$function_name(";
-            push @sentence, @{traverse($args)};
+            push @sentence, @{traverse($args, $imports)};
             push @sentence, ")";
 
         # } elsif ($pkg eq 'Compiler::Parser::Node::Handle') {
@@ -355,24 +355,24 @@ sub traverse {
                 push @sentence, $name;
             }
             push @sentence, '[';
-            push @sentence, @{traverse($key && $key->data_node)};
+            push @sentence, @{traverse($key && $key->data_node, $imports)};
             push @sentence, ']';
 
         } elsif ($pkg eq 'Compiler::Parser::Node::HashRef') {
             my $data_node = $current->data_node;
             push @sentence, '{';
-            push @sentence, @{traverse($data_node)};
+            push @sentence, @{traverse($data_node, $imports)};
             push @sentence, '}';
         } elsif ($pkg eq 'Compiler::Parser::Node::IfStmt') {
             my $true_stmt = $current->true_stmt;
             my $expr = $current->expr;
 
             push @sentence, "if (";
-            push @sentence, @{traverse($expr)};
+            push @sentence, @{traverse($expr, $imports)};
             push @sentence, ") {\n";
             push @sentence, $INDENT x ($depth + 1);
 
-            push @sentence, @{traverse($true_stmt)};
+            push @sentence, @{traverse($true_stmt, $imports)};
 
             push @sentence, ";\n";
             push @sentence, $INDENT x $depth;
@@ -438,7 +438,7 @@ sub traverse {
 
         } elsif ($pkg eq 'Compiler::Parser::Node::List') {
             my $data = $current->data_node;
-            push @sentence, @{traverse($data)};
+            push @sentence, @{traverse($data, $imports)};
 
         } elsif ($pkg eq 'Compiler::Parser::Node::Module') {
             my $module_name = $token->data;
@@ -451,12 +451,12 @@ sub traverse {
                 my $path = $base_name;
                 $path =~ s/::/\//g;
                 $base_name =~ s/.+:://g;
-                push @sentence, "import { ${base_name} } from '${path}'";
+                push @$imports, "import { ${base_name} } from '${path}'";
             } else {
                 my $path = $module_name;
                 $path =~ s/::/\//g;
                 $module_name =~ s/.+:://g;
-                push @sentence, "import { ${module_name} } from '${path}'";
+                push @$imports, "import { ${module_name} } from '${path}'";
             }
 
         } elsif ($pkg eq 'Compiler::Parser::Node::Package') {
@@ -480,7 +480,7 @@ sub traverse {
             my $name = $token->name;
             if ($name eq 'RegQuote') {
                 push @sentence, "'";
-                push @sentence, @{traverse($current->expr)};
+                push @sentence, @{traverse($current->expr, $imports)};
                 push @sentence, "'";
             } else {
                 push @sentence, cprint(ref($current) . ", " . $current->token->data);
@@ -490,20 +490,20 @@ sub traverse {
         } elsif ($pkg eq 'Compiler::Parser::Node::Return') {
             my $body = $current->body;
             push @sentence, 'return ';
-            push @sentence, @{traverse($body)};
+            push @sentence, @{traverse($body, $imports)};
         } elsif ($pkg eq 'Compiler::Parser::Node::SingleTermOperator') {
             push @sentence, $token->data;
-            push @sentence, @{traverse($current->expr)};
+            push @sentence, @{traverse($current->expr, $imports)};
 
         } elsif ($pkg eq 'Compiler::Parser::Node::ThreeTermOperator') {
             my $cond = $current->cond;
             my $true_expr = $current->true_expr;
             my $false_expr = $current->false_expr;
-            push @sentence, @{traverse($cond)};
+            push @sentence, @{traverse($cond, $imports)};
             push @sentence, ' ? ';
-            push @sentence, @{traverse($true_expr)};
+            push @sentence, @{traverse($true_expr, $imports)};
             push @sentence, ' : ';
-            push @sentence, @{traverse($false_expr)};
+            push @sentence, @{traverse($false_expr, $imports)};
         # } elsif ($pkg eq 'Compiler::Parser::Node::WhileStmt') {
         } else {
             push @sentence, "\n";
@@ -525,6 +525,9 @@ sub traverse {
 
 print "\n\n";
 # print Dumper $ast;
-my $ret = traverse($ast->root);
+my $imports = [];
+my $ret = traverse($ast->root, $imports);
+print join ";\n", @$imports;
+print "\n\n";
 print @$ret;
 print "}\n";
