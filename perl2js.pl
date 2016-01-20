@@ -110,11 +110,16 @@ sub traverse {
             my $idx = $current->idx;
             my $name = substr($token->data, 1);
             if ($name eq '_') {
-                print 'arguments';
+                if ($idx == 0) {
+                    print 'this';
+                } else {
+                    print 'arguments';
+                    traverse($idx);
+                }
             } else {
                 print $name;
+                traverse($idx);
             }
-            traverse($idx);
         } elsif ($pkg eq 'Compiler::Parser::Node::ArrayRef') {
             my $data_node = $current->data_node;
             print '[';
@@ -313,6 +318,24 @@ sub traverse {
                     traverse($ret->{most_left});
                     print '.';
                 }
+                # if ($function_name eq 'join')  {
+                #     # 'join' take at least one parameter.
+                #     my $ret = shift_comma_branch($args);
+                #     my $separater = $ret->{most_left};
+                #     # $args = $ret->{new_root};
+                #     $args = $separater;
+                #     if (!$separater) {
+                #         warn "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii";
+                #     }
+                #     print Dumper $separater && $separater->token;
+                # #     my $args = $ret->{most_left}; # separater.
+
+                # #     if ($ret->{new_root}) {
+                # #         traverse($ret->{new_root});
+                # #     } else {
+                # #         print '[].'
+                # #     }
+                # }
             }
             print "$function_name(";
             traverse($args);
@@ -320,10 +343,19 @@ sub traverse {
 
         # } elsif ($pkg eq 'Compiler::Parser::Node::Handle') {
         # } elsif ($pkg eq 'Compiler::Parser::Node::HandleRead') {
-        # } elsif ($pkg eq 'Compiler::Parser::Node::Hash') {
-            
+        } elsif ($pkg eq 'Compiler::Parser::Node::Hash') {
+            my $key = $current->key;
+            my $name = substr($token->data, 1);
+            if ($name eq 'ENV') {
+                print 'process.env';
+            } else {
+                print $name;
+            }
+            print '[';
+            traverse($key && $key->data_node);
+            print ']';
+
         } elsif ($pkg eq 'Compiler::Parser::Node::HashRef') {
-            # hash ref literal
             my $data_node = $current->data_node;
             print '{';
             traverse($data_node);
@@ -362,10 +394,17 @@ sub traverse {
                 print substr($data, 1);
             } elsif ($name eq 'Key') {
                 print '"' . $data . '"';
+                # print $data;
+            } elsif ($name eq 'Namespace') {
+                $data =~ s/.+:://;
+                print $data;
             } elsif ($name eq 'HashVar') {
                 print substr($data, 1);
             } elsif ($name eq 'ArrayVar') {
                 print substr($data, 1);
+            } elsif ($name eq 'RegExp') {
+                my $data = $current->data;
+                print $data;
             } elsif ($name eq 'Var') {
                 if ($data eq '$self') {
                     print "this";
@@ -377,6 +416,12 @@ sub traverse {
             } elsif ($name eq 'SpecificKeyword') {
                 if ($data eq '__PACKAGE__') {
                     print $current_class;
+                } else {
+                    cprint(ref($current) . ", " . $name . ": " . $data . "\n");
+                }
+            } elsif ($name eq 'SpecificValue') {
+                if ($data eq '$_') {
+                    print $data;
                 } else {
                     cprint(ref($current) . ", " . $name . ": " . $data . "\n");
                 }
@@ -428,7 +473,15 @@ sub traverse {
             $current_class = $class_name;
             $current_package = $class_name;
 
-        # } elsif ($pkg eq 'Compiler::Parser::Node::RegPrefix') {
+        } elsif ($pkg eq 'Compiler::Parser::Node::RegPrefix') {
+            my $name = $token->name;
+            if ($name eq 'RegQuote') {
+                print "'";
+                traverse($current->expr);
+                print "'";
+            } else {
+                cprint(ref($current) . ", " . $current->token->data);
+            }
         # } elsif ($pkg eq 'Compiler::Parser::Node::RegReplace') {
         # } elsif ($pkg eq 'Compiler::Parser::Node::Regexp') {
         } elsif ($pkg eq 'Compiler::Parser::Node::Return') {
@@ -437,7 +490,17 @@ sub traverse {
             traverse($body);
         } elsif ($pkg eq 'Compiler::Parser::Node::SingleTermOperator') {
             print $token->data;
-        # } elsif ($pkg eq 'Compiler::Parser::Node::ThreeTermOperator') {
+            traverse($current->expr);
+
+        } elsif ($pkg eq 'Compiler::Parser::Node::ThreeTermOperator') {
+            my $cond = $current->cond;
+            my $true_expr = $current->true_expr;
+            my $false_expr = $current->false_expr;
+            traverse($cond);
+            print ' ? ';
+            traverse($true_expr);
+            print ' : ';
+            traverse($false_expr);
         # } elsif ($pkg eq 'Compiler::Parser::Node::WhileStmt') {
         } else {
             print "\n";
