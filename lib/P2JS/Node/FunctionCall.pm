@@ -1,4 +1,4 @@
-package P2JS::Node::Leaf;
+package P2JS::Node::FunctionCall;
 use strict;
 use warnings;
 use parent 'P2JS::Node';
