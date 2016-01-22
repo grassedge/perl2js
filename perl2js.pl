@@ -376,21 +376,16 @@ sub traverse {
                         }, 'Compiler::Lexer::Token',
                     }, 'Compiler::Parser::Node::Function';
 
-                # } elsif ($function_name eq 'join')  {
-                #     my $ret = shift_comma_branch($args);
-                #     my $separater = $ret->{most_left};
-                #     $args = $separater;
-                #     if (!$separater) {
-                #         warn "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii";
-                #     }
-                #     push @sentence, Dumper $separater && $separater->token;
-                # #     my $args = $ret->{most_left}; # separater.
-
-                # #     if ($ret->{new_root}) {
-                # #         push @sentence, @{traverse($ret->{new_root}, $context)};
-                # #     } else {
-                # #         push @sentence, '[].'
-                # #     }
+                } elsif (
+                    $function_name eq 'join'
+                )  {
+                    if (ref ($args) eq 'Compiler::Parser::Node::List') {
+                        $args = $args->{data};
+                    }
+                    my $ret = shift_comma_branch($args);
+                    push @sentence, @{traverse($ret->{new_root}, $context)};
+                    push @sentence, '.';
+                    $args = $ret->{most_left};
                 } else {
                     push @sentence, cprint(ref($current) . ", " . $name . ": " . $function_name);
                 }
