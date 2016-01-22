@@ -199,6 +199,8 @@ sub traverse {
                 $data = " === ";
             } elsif ($token->name eq 'StringAdd') {
                 $data = " + ";
+            } elsif ($token->name eq 'StringAddEqual') {
+                $data = " = " . traverse($left, $context)->[0] . " + ";
             } else {
                 push @sentence, cprint(ref($current) . ", " . $name . ": " . $data);
             }
