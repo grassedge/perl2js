@@ -4,22 +4,8 @@ use strict;
 use warnings;
 use parent qw(Compiler::Parser::Node);
 
-use Compiler::Lexer;
-use Compiler::Parser;
-use Compiler::Parser::AST::Renderer;
 use Compiler::Parser::Node::ArrayRef;
 use Data::Dumper;
-
-# my $filename = $ARGV[0];
-# open(my $fh, "<", $filename) or die("Cannot open $filename: $!");
-# my $script = do { local $/; <$fh> };
-
-# my $lexer  = Compiler::Lexer->new($filename);
-# my $tokens = $lexer->tokenize($script);
-# my $parser = Compiler::Parser->new();
-# my $ast = $parser->parse($tokens);
-#warn Dumper $ast;
-#Compiler::Parser::AST::Renderer->new->render($ast);
 
 sub to_javascript {
     my ($self) = @_;
