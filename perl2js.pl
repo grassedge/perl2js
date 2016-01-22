@@ -236,7 +236,6 @@ sub traverse {
             } else {
                 push @sentence, cprint(ref($current) . ", " . $name . ": " . $data);
             }
-            # push @sentence, Dumper $current->expr;
         # } elsif ($pkg eq 'Compiler::Parser::Node::DoStmt') {
         } elsif ($pkg eq 'Compiler::Parser::Node::ElseStmt') {
             push @sentence, "e {\n";
@@ -357,8 +356,6 @@ sub traverse {
                     $args->{right} = $left;
                     $function_name = 'Object.create'
                 } elsif ($function_name eq 'map')  {
-                    # push @sentence, cprint(ref($current) . ", " . $name . ": " . $function_name);
-                    # push @sentence, cprint Dumper ($args);
                     my $list = $current->{args}->[1];
                     push @sentence, @{traverse($list, $context)};
                     push @sentence, '.';
