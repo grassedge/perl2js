@@ -325,6 +325,7 @@ sub traverse {
                 if ($function_name eq 'push @sentence,') { $function_name = 'console.log'; }
                 elsif ($function_name eq 'warn')  { $function_name = 'console.warn'; }
                 elsif ($function_name eq 'ref')  { $function_name = 'typeof'; }
+                elsif ($function_name eq 'sprintf') {  } # TODO. need to supply runtime.
                 elsif ($function_name eq 'pop')  {
                     # pop take just one parameter.
                     push @sentence, @{traverse($args, $context)};
