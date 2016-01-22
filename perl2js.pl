@@ -410,9 +410,9 @@ sub traverse {
 
         } elsif ($pkg eq 'Compiler::Parser::Node::HashRef') {
             my $data_node = $current->data_node;
-            push @sentence, '{';
+            push @sentence, '{ ';
             push @sentence, @{traverse($data_node, $context)};
-            push @sentence, '}';
+            push @sentence, ' }';
         } elsif ($pkg eq 'Compiler::Parser::Node::IfStmt') {
             my $true_stmt = $current->true_stmt;
             my $false_stmt = $current->false_stmt;
