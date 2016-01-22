@@ -331,7 +331,15 @@ sub traverse {
                     push @sentence, @{traverse($args, $context)};
                     push @sentence, '.';
                     $args = undef;
-                } elsif ($function_name eq 'push')  {
+                } elsif ($function_name eq 'length')  {
+                    # length take just one parameter.
+                    push @sentence, @{traverse($args, $context)};
+                    push @sentence, '.';
+                    $args = undef;
+                } elsif (
+                    $function_name eq 'push' ||
+                    $function_name eq 'splice'
+                )  {
                     # 'push' take at least two parameters.
                     # so $args is Node::Branch / Comma.
                     my $ret = shift_comma_branch($args);
