@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use parent qw(Compiler::Parser::Node);
 
-use Compiler::Parser::Node::ArrayRef;
+use P2JS::Node::ArrayRef;
 use Data::Dumper;
 
 sub to_javascript {
@@ -61,7 +61,7 @@ sub remove_node {
 
 sub shift_comma_branch {
     my ($branch) = @_; # Node::Branch / Comma
-    if (ref($branch) ne 'Compiler::Parser::Node::Branch') {
+    if (ref($branch) ne 'P2JS::Node::Branch') {
         return {
             new_root => $branch,
             most_left => undef
@@ -70,7 +70,7 @@ sub shift_comma_branch {
     my $most_left;
     my $shift; $shift = sub {
         my ($branch) = @_;
-        if (ref($branch->left) eq 'Compiler::Parser::Node::Branch') {
+        if (ref($branch->left) eq 'P2JS::Node::Branch') {
             my $new_left = $shift->($branch->left);
             if ($new_left) {
                 $branch->{left} = $new_left;
@@ -106,7 +106,7 @@ sub traverse {
         my $parent = $current->parent;
 
         if ($pkg eq '') {
-        } elsif ($pkg eq 'Compiler::Parser::Node::Array') {
+        } elsif ($pkg eq 'P2JS::Node::Array') {
             my $idx = $current->idx;
             my $name = substr($token->data, 1);
             if ($name eq '_') {
@@ -120,13 +120,13 @@ sub traverse {
                 push @sentence, $name;
                 push @sentence, @{traverse($idx, $context)};
             }
-        } elsif ($pkg eq 'Compiler::Parser::Node::ArrayRef') {
+        } elsif ($pkg eq 'P2JS::Node::ArrayRef') {
             my $data_node = $current->data_node;
             push @sentence, '[';
             push @sentence, @{traverse($data_node, $context)};
             push @sentence, ']';
-        # } elsif ($pkg eq 'Compiler::Parser::Node::Block') {
-        } elsif ($pkg eq 'Compiler::Parser::Node::Branch') {
+        # } elsif ($pkg eq 'P2JS::Node::Block') {
+        } elsif ($pkg eq 'P2JS::Node::Branch') {
             my $left  = $current->left;
             my $right = $current->right;
             my $name = $token->name;
@@ -150,22 +150,22 @@ sub traverse {
                     }
                 }
                 if ($left->token->name eq 'LocalHashVar' &&
-                    ref($right) eq 'Compiler::Parser::Node::List'
+                    ref($right) eq 'P2JS::Node::List'
                     ) {
                     my $arrayref = bless +{
                         data => $right,
                         indent => $right->indent
-                    }, 'Compiler::Parser::Node::HashRef';
+                    }, 'P2JS::Node::HashRef';
                     $right->{parent} = $arrayref;
                     $right = $arrayref;
                 }
                 if ($left->token->name eq 'LocalArrayVar' &&
-                    ref($right) eq 'Compiler::Parser::Node::List'
+                    ref($right) eq 'P2JS::Node::List'
                     ) {
                     my $arrayref = bless +{
                         data => $right,
                         indent => $right->indent
-                    }, 'Compiler::Parser::Node::ArrayRef';
+                    }, 'P2JS::Node::ArrayRef';
                     $right->{parent} = $arrayref;
                     $right = $arrayref;
                 }
@@ -177,12 +177,12 @@ sub traverse {
             } elsif ($token->name eq 'Or') {
                 $data = " || ";
             } elsif ($token->name eq 'Pointer') {
-                if (ref($right) eq 'Compiler::Parser::Node::FunctionCall' &&
+                if (ref($right) eq 'P2JS::Node::FunctionCall' &&
                     $right->token->data eq 'new') {
                     $data = 'new';
-                } elsif (ref($right) eq 'Compiler::Parser::Node::ArrayRef') {
+                } elsif (ref($right) eq 'P2JS::Node::ArrayRef') {
                     $data = "";
-                } elsif (ref($right) eq 'Compiler::Parser::Node::HashRef') {
+                } elsif (ref($right) eq 'P2JS::Node::HashRef') {
                     my $data_node = $right->data_node;
                     $skip = 1;
                     push @sentence, @{traverse($left, $context)};
@@ -216,9 +216,9 @@ sub traverse {
                 push @sentence, @{traverse($right, $context)};
             }
 
-        # } elsif ($pkg eq 'Compiler::Parser::Node::CodeDereference') {
-        # } elsif ($pkg eq 'Compiler::Parser::Node::ControlStmt') {
-        } elsif ($pkg eq 'Compiler::Parser::Node::Dereference') {
+        # } elsif ($pkg eq 'P2JS::Node::CodeDereference') {
+        # } elsif ($pkg eq 'P2JS::Node::ControlStmt') {
+        } elsif ($pkg eq 'P2JS::Node::Dereference') {
             my $name = $token->name;
             my $data = $token->data;
             my $trimmed = substr($data, 2);
@@ -233,17 +233,17 @@ sub traverse {
             } else {
                 push @sentence, cprint(ref($current) . ", " . $name . ": " . $data);
             }
-        # } elsif ($pkg eq 'Compiler::Parser::Node::DoStmt') {
-        } elsif ($pkg eq 'Compiler::Parser::Node::ElseStmt') {
+        # } elsif ($pkg eq 'P2JS::Node::DoStmt') {
+        } elsif ($pkg eq 'P2JS::Node::ElseStmt') {
             push @sentence, "e {\n";
             push @sentence, $INDENT x ($depth + 1);
             push @sentence, @{traverse($current->stmt, $context)};
             push @sentence, ";\n";
             push @sentence, $INDENT x $depth;
             push @sentence, "}";
-        # } elsif ($pkg eq 'Compiler::Parser::Node::ForStmt') {
-        # } elsif ($pkg eq 'Compiler::Parser::Node::ForeachStmt') {
-        } elsif ($pkg eq 'Compiler::Parser::Node::Function') {
+        # } elsif ($pkg eq 'P2JS::Node::ForStmt') {
+        # } elsif ($pkg eq 'P2JS::Node::ForeachStmt') {
+        } elsif ($pkg eq 'P2JS::Node::Function') {
             my $body = $current->body;
             my $function_name = $token->data;
             my $code_ref = $token->name ne 'Function';
@@ -254,12 +254,12 @@ sub traverse {
             my $method = '';
             if ($body) {
                 my $assign = search($body, {
-                    ref => 'Compiler::Parser::Node::Branch',
+                    ref => 'P2JS::Node::Branch',
                     name => 'Assign'
                 });
                 if ($assign &&
                     $assign->right->token->name eq 'ArgumentArray' &&
-                    ref($assign->left) eq 'Compiler::Parser::Node::List') {
+                    ref($assign->left) eq 'P2JS::Node::List') {
                     $parameters = $assign->left; # Node::List
 
                     push(@$skip_nodes, $parameters);
@@ -267,10 +267,10 @@ sub traverse {
                     my $comma = $parameters->data_node; # Node::Branch / Comma
                     my $parent_comma = $comma;
                     my $most_left;
-                    if (ref($parent_comma) ne 'Compiler::Parser::Node::Branch') {
+                    if (ref($parent_comma) ne 'P2JS::Node::Branch') {
                         $most_left = $parent_comma;
                     } else {
-                        while (ref($parent_comma->left) eq 'Compiler::Parser::Node::Branch') {
+                        while (ref($parent_comma->left) eq 'P2JS::Node::Branch') {
                             $parent_comma = $parent_comma->left;
                         }
                         $most_left = $parent_comma->left;
@@ -314,7 +314,7 @@ sub traverse {
             push @sentence, $INDENT x ($depth);
             push @sentence, "}";
 
-        } elsif ($pkg eq 'Compiler::Parser::Node::FunctionCall') {
+        } elsif ($pkg eq 'P2JS::Node::FunctionCall') {
             my $function_name = $token->data;
             my $name = $token->name;
             my $args = $current->{args}->[0];
@@ -357,8 +357,8 @@ sub traverse {
                                 name => 'Var',
                                 data => '$prototype'
                             }, 'Compiler::Lexer::Token'),
-                        }, 'Compiler::Parser::Node::Leaf'),
-                    }, 'Compiler::Parser::Node::Branch';
+                        }, 'P2JS::Node::Leaf'),
+                    }, 'P2JS::Node::Branch';
                     $args->{right} = $left;
                     $function_name = 'Object.create'
                 } elsif ($function_name eq 'map')  {
@@ -371,12 +371,12 @@ sub traverse {
                         token => bless {
                             name => '',
                         }, 'Compiler::Lexer::Token',
-                    }, 'Compiler::Parser::Node::Function';
+                    }, 'P2JS::Node::Function';
 
                 } elsif (
                     $function_name eq 'join'
                 )  {
-                    if (ref ($args) eq 'Compiler::Parser::Node::List') {
+                    if (ref ($args) eq 'P2JS::Node::List') {
                         $args = $args->{data};
                     }
                     my $ret = shift_comma_branch($args);
@@ -391,9 +391,9 @@ sub traverse {
             push @sentence, @{traverse($args, $context)};
             push @sentence, ")";
 
-        # } elsif ($pkg eq 'Compiler::Parser::Node::Handle') {
-        # } elsif ($pkg eq 'Compiler::Parser::Node::HandleRead') {
-        } elsif ($pkg eq 'Compiler::Parser::Node::Hash') {
+        # } elsif ($pkg eq 'P2JS::Node::Handle') {
+        # } elsif ($pkg eq 'P2JS::Node::HandleRead') {
+        } elsif ($pkg eq 'P2JS::Node::Hash') {
             my $key = $current->key;
             my $name = substr($token->data, 1);
             if ($name eq 'ENV') {
@@ -405,12 +405,12 @@ sub traverse {
             push @sentence, @{traverse($key && $key->data_node, $context)};
             push @sentence, ']';
 
-        } elsif ($pkg eq 'Compiler::Parser::Node::HashRef') {
+        } elsif ($pkg eq 'P2JS::Node::HashRef') {
             my $data_node = $current->data_node;
             push @sentence, '{ ';
             push @sentence, @{traverse($data_node, $context)};
             push @sentence, ' }';
-        } elsif ($pkg eq 'Compiler::Parser::Node::IfStmt') {
+        } elsif ($pkg eq 'P2JS::Node::IfStmt') {
             my $true_stmt = $current->true_stmt;
             my $false_stmt = $current->false_stmt;
             my $expr = $current->expr;
@@ -439,8 +439,8 @@ sub traverse {
 
                 push @sentence, @{traverse($false_stmt, $context)};
             }
-        # } elsif ($pkg eq 'Compiler::Parser::Node::Label') {
-        } elsif ($pkg eq 'Compiler::Parser::Node::Leaf') {
+        # } elsif ($pkg eq 'P2JS::Node::Label') {
+        } elsif ($pkg eq 'P2JS::Node::Leaf') {
             my $name = $token->name;
             my $data = $token->data;
             if ($name eq 'Int') {
@@ -504,11 +504,11 @@ sub traverse {
                 push @sentence, cprint(ref($current) . ", " . $name . ": " . $data);
             }
 
-        } elsif ($pkg eq 'Compiler::Parser::Node::List') {
+        } elsif ($pkg eq 'P2JS::Node::List') {
             my $data = $current->data_node;
             push @sentence, @{traverse($data, $context)};
 
-        } elsif ($pkg eq 'Compiler::Parser::Node::Module') {
+        } elsif ($pkg eq 'P2JS::Node::Module') {
             my $module_name = $token->data;
             if ($module_name ~~ ['strict', 'warnings', 'utf8']) { }
             elsif ($module_name eq 'constant') {
@@ -527,7 +527,7 @@ sub traverse {
                 push @{$context->{imports}}, "import { ${module_name} } from '${path}'";
             }
 
-        } elsif ($pkg eq 'Compiler::Parser::Node::Package') {
+        } elsif ($pkg eq 'P2JS::Node::Package') {
             my $class_name = $token->data;
             $class_name =~ s/.+:://g;
             # TODO: support Mixin.
@@ -544,7 +544,7 @@ sub traverse {
             $current_class = $class_name;
             $current_package = $class_name;
 
-        } elsif ($pkg eq 'Compiler::Parser::Node::RegPrefix') {
+        } elsif ($pkg eq 'P2JS::Node::RegPrefix') {
             my $name = $token->name;
             if ($name eq 'RegQuote') {
                 push @sentence, "'";
@@ -553,17 +553,17 @@ sub traverse {
             } else {
                 push @sentence, cprint(ref($current) . ", " . $current->token->data);
             }
-        # } elsif ($pkg eq 'Compiler::Parser::Node::RegReplace') {
-        # } elsif ($pkg eq 'Compiler::Parser::Node::Regexp') {
-        } elsif ($pkg eq 'Compiler::Parser::Node::Return') {
+        # } elsif ($pkg eq 'P2JS::Node::RegReplace') {
+        # } elsif ($pkg eq 'P2JS::Node::Regexp') {
+        } elsif ($pkg eq 'P2JS::Node::Return') {
             my $body = $current->body;
             push @sentence, 'return ';
             push @sentence, @{traverse($body, $context)};
-        } elsif ($pkg eq 'Compiler::Parser::Node::SingleTermOperator') {
+        } elsif ($pkg eq 'P2JS::Node::SingleTermOperator') {
             push @sentence, $token->data;
             push @sentence, @{traverse($current->expr, $context)};
 
-        } elsif ($pkg eq 'Compiler::Parser::Node::ThreeTermOperator') {
+        } elsif ($pkg eq 'P2JS::Node::ThreeTermOperator') {
             my $cond = $current->cond;
             my $true_expr = $current->true_expr;
             my $false_expr = $current->false_expr;
@@ -572,7 +572,7 @@ sub traverse {
             push @sentence, @{traverse($true_expr, $context)};
             push @sentence, ' : ';
             push @sentence, @{traverse($false_expr, $context)};
-        } elsif ($pkg eq 'Compiler::Parser::Node::WhileStmt') {
+        } elsif ($pkg eq 'P2JS::Node::WhileStmt') {
             my $true_stmt = $current->true_stmt;
             my $expr = $current->expr;
             my $data = $token->data;
