@@ -7,12 +7,14 @@ use parent qw(Compiler::Parser::Node);
 use P2JS::Node::ArrayRef;
 use Data::Dumper;
 
-sub to_javascript {
-    my ($self) = @_;
-    my $context = {
-        imports => []
-    };
-    return traverse($self, $context);
+sub new {
+    my ($class, %args) = @_;
+    return bless \%args, $class;
+}
+
+sub to_js_ast {
+    # my ($self, $context) = @_;
+    # return traverse($self, $self->{context});
 }
 
 sub search {

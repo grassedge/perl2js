@@ -33,9 +33,11 @@ $ast->walk(sub {
 
 my $context = P2JS::Context->new;
 my $root = $ast->root;
-$root = P2JS::Node::Class->new(%$root, context => $context);
-my $ret = $root->to_javascript;
-print join ";\n", @{$context->{imports}};
-print "\n\n";
-print @$ret;
-print "}\n";
+# $root = P2JS::Node::Class->new(%$root, context => $context);
+my $ret = $root->to_js_ast($context);
+# print join ";\n", @{$context->{imports}};
+# print "\n\n";
+# print @$ret;
+# print "}\n";
+use Data::Dumper;
+warn Dumper $context;
