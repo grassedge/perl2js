@@ -1,4 +1,4 @@
-package P2JS::Node::Class;
+package P2JS::Node::Function;
 
 use strict;
 use warnings;
@@ -12,9 +12,9 @@ sub body {
 sub to_javascript {
     my ($self, $depth) = @_;
     return (
-        "class " . $self->token->data . " {\n",
-        $self->body->to_javascript($depth + 1),
-        "}\n"
+        $self->indent($depth) . "function " . $self->token->data . "() {\n",
+        $self->indent($depth) . "}\n",
+        $self->next->to_javascript
     );
 }
 
