@@ -9,7 +9,7 @@ use Compiler::Parser::Node::ArrayRef;
 use Module::Load;
 
 use P2JS::Context;
-use P2JS::Node;
+use P2JS::Converter::Node;
 use P2JS::Node::Class;
 
 my $filename = $ARGV[0];
@@ -25,7 +25,7 @@ my $ast = $parser->parse($tokens);
 $ast->walk(sub {
     my ($node) = @_;
     my $ref = ref($node);
-    $ref =~ s/Compiler::Parser/P2JS/;
+    $ref =~ s/Compiler::Parser/P2JS::Converter/;
     load $ref;
     bless $node, $ref;
 });
@@ -33,7 +33,6 @@ $ast->walk(sub {
 
 my $context = P2JS::Context->new;
 my $root = $ast->root;
-# $root = P2JS::Node::Class->new(%$root, context => $context);
 my $ret = $root->to_js_ast($context);
 # print join ";\n", @{$context->{imports}};
 # print "\n\n";
@@ -41,3 +40,6 @@ my $ret = $root->to_js_ast($context);
 # print "}\n";
 use Data::Dumper;
 warn Dumper $context;
+for my $class (@{$context->classes}) {
+    print $class->to_javascript(0);
+}
