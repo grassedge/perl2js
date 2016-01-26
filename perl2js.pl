@@ -40,6 +40,9 @@ my $ret = $root->to_js_ast($context);
 # print "}\n";
 use Data::Dumper;
 warn Dumper $context;
+for my $import (@{$context->imports}) {
+    print $import->to_javascript(0);
+}
 for my $class (@{$context->classes}) {
     print $class->to_javascript(0);
 }
