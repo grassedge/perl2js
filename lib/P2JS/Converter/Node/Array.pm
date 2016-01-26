@@ -3,7 +3,33 @@ use strict;
 use warnings;
 use parent 'P2JS::Converter::Node';
 
-sub idx { shift->{idx} }
+use Compiler::Lexer::Token;
+use P2JS::Converter::Node::Nop;
+
+use P2JS::Node::Leaf;
+use P2JS::Node::PropertyAccessor;
+
+sub idx { shift->{idx} // P2JS::Converter::Node::Nop->new; }
+
+sub to_js_ast {
+    my ($self, $context) = @_;
+    my $key;
+    if (ref($self->idx) eq 'P2JS::Converter::Node::ArrayRef') {
+        $key = $self->idx->data_node;
+    } else {
+        $key = $self->idx;
+    }
+    return P2JS::Node::PropertyAccessor->new(
+        token => $self->token,
+        data  => P2JS::Node::Leaf->new(
+            token => bless({
+                data => $self->data,
+            }, 'Compiler::Lexer::Token')
+        ),
+        key   => $key->to_js_ast($context),
+        next  => $self->next->to_js_ast($context),
+    );
+}
 
 1;
 
