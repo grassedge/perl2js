@@ -17,15 +17,15 @@ sub to_js_ast {
     my $left  = $self->left;
     my $right = $self->right;
 
-    if ($token->name eq 'Comma') {
-        $token->{data} = $token->data . " ";
-    } elsif ($token->name eq 'AlphabetOr') {
+    if ($name eq 'Comma') {
+        $token->{data} = ", ";
+    } elsif ($name eq 'AlphabetOr') {
         $token->{data} = " || ";
-    } elsif ($token->name eq 'And') {
+    } elsif ($name eq 'And') {
         $token->{data} = " && ";
-    } elsif ($token->name eq 'Arrow') {
+    } elsif ($name eq 'Arrow') {
         $token->{data} = ' : ';
-    } elsif ($token->name eq 'Assign') {
+    } elsif ($name eq 'Assign') {
         if ($left->token->name eq 'LocalHashVar' &&
             ref($right) eq 'P2JS::Converter::Node::List'
             ) {
@@ -49,11 +49,17 @@ sub to_js_ast {
         $token->{data} = " " . $token->data . " ";
     } elsif ($name eq 'EqualEqual') {
         $token->{data} = " == ";
+    } elsif ($name eq 'Greater') {
+        $token->{data} = " > ";
     } elsif ($name eq 'GreaterEqual') {
         $token->{data} = " >= ";
-    } elsif ($token->name eq 'Or') {
+    } elsif ($name eq 'Less') {
+        $token->{data} = " < ";
+    } elsif ($name eq 'LessEqual') {
+        $token->{data} = " <= ";
+    } elsif ($name eq 'Or') {
         $token->{data} = " || ";
-    } elsif ($token->name eq 'Pointer') {
+    } elsif ($name eq 'Pointer') {
         if (ref($right) eq 'P2JS::Converter::Node::FunctionCall' &&
             $right->token->data eq 'new') {
             $token->{data} = 'new';
@@ -68,11 +74,11 @@ sub to_js_ast {
         } else {
             $token->{data} = ".";
         }
-    } elsif ($token->name eq 'StringEqual') {
+    } elsif ($name eq 'StringEqual') {
         $token->{data} = " === ";
-    } elsif ($token->name eq 'StringAdd') {
+    } elsif ($name eq 'StringAdd') {
         $token->{data} = " + ";
-    # } elsif ($token->name eq 'StringAddEqual') {
+    # } elsif ($name eq 'StringAddEqual') {
         # $token->{data} = " = " . traverse($left, $context)->[0] . " + ";
     } else {
         $token->{data} = $self->cprint(ref($self) . ", " . $name . ": " . $data);
