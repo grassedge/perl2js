@@ -12,6 +12,11 @@ sub imports {
     return $self->{imports};
 }
 
+sub push_import {
+    my ($self, $import) = @_;
+    push @{$self->{imports}}, $import;
+}
+
 sub classes {
     my ($self) = @_;
     return $self->{classes};

@@ -17,6 +17,11 @@ sub next {
     return $self->{next} // P2JS::Converter::Node::Nop->new;
 }
 
+sub is_nop {
+    my ($self) = @_;
+    return $self->isa("P2JS::Converter::Node::Nop");
+}
+
 sub to_js_ast {
     my ($self) = @_;
     warn "not implemented: " . ref ($self);

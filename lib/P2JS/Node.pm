@@ -20,9 +20,14 @@ sub next {
     return $self->{next} // P2JS::Node::Nop->new;
 }
 
+sub is_nop {
+    my ($self) = @_;
+    return $self->isa("P2JS::Node::Nop");
+}
+
 sub indent {
     my ($self, $depth) = @_;
-    return "  " x $depth;
+    return "    " x $depth;
 }
 
 sub to_javascript {

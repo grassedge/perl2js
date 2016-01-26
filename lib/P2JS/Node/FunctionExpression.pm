@@ -1,4 +1,4 @@
-package P2JS::Node::Class;
+package P2JS::Node::FunctionExpression;
 
 use strict;
 use warnings;
@@ -14,7 +14,7 @@ sub body {
 sub to_javascript {
     my ($self, $depth) = @_;
     return (
-        "class " . $self->token->data . " {\n",
+        "function() {\n",
         ($self->body->is_nop ?
          () :
          ($self->indent($depth + 1),
@@ -23,8 +23,8 @@ sub to_javascript {
          )
         ),
         $self->indent($depth),
-        "}\n",
-        ($self->next->is_nop ? () : ($self->indent($depth))),
+        "}",
+        ($self->next->is_nop ? () : (";\n" . $self->indent($depth))),
         $self->next->to_javascript($depth),
     );
 }

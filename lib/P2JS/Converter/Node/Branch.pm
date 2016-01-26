@@ -11,11 +11,78 @@ sub right { shift->{right} // P2JS::Converter::Node::Nop->new; }
 
 sub to_js_ast {
     my ($self, $context) = @_;
+    my $token = $self->token;
+    my $name = $token->name;
+    my $data = $token->data;
+    my $left  = $self->left;
+    my $right = $self->right;
+
+    if ($token->name eq 'Comma') {
+        $token->{data} = $token->data . " ";
+    } elsif ($token->name eq 'AlphabetOr') {
+        $token->{data} = " || ";
+    } elsif ($token->name eq 'And') {
+        $token->{data} = " && ";
+    } elsif ($token->name eq 'Arrow') {
+        $token->{data} = ' : ';
+    } elsif ($token->name eq 'Assign') {
+        if ($left->token->name eq 'LocalHashVar' &&
+            ref($right) eq 'P2JS::Converter::Node::List'
+            ) {
+            my $arrayref = bless +{
+                data => $right,
+                indent => $right->indent
+            }, 'P2JS::Converter::Node::HashRef';
+            $right->{parent} = $arrayref;
+            $right = $arrayref;
+        }
+        if ($left->token->name eq 'LocalArrayVar' &&
+            ref($right) eq 'P2JS::Converter::Node::List'
+            ) {
+            my $arrayref = bless +{
+                data => $right,
+                indent => $right->indent
+            }, 'P2JS::Converter::Node::ArrayRef';
+            $right->{parent} = $arrayref;
+            $right = $arrayref;
+        }
+        $token->{data} = " " . $token->data . " ";
+    } elsif ($name eq 'EqualEqual') {
+        $token->{data} = " == ";
+    } elsif ($name eq 'GreaterEqual') {
+        $token->{data} = " >= ";
+    } elsif ($token->name eq 'Or') {
+        $token->{data} = " || ";
+    } elsif ($token->name eq 'Pointer') {
+        if (ref($right) eq 'P2JS::Converter::Node::FunctionCall' &&
+            $right->token->data eq 'new') {
+            $token->{data} = 'new';
+        } elsif (ref($right) eq 'P2JS::Converter::Node::ArrayRef') {
+            $token->{data} = "";
+        } elsif (ref($right) eq 'P2JS::Converter::Node::HashRef') {
+            my $data_node = $right->data_node;
+            # push @sentence, @{traverse($left, $context)};
+            # push @sentence, '[';
+            # push @sentence, @{traverse($data_node, $context)};
+            # push @sentence, ']';
+        } else {
+            $token->{data} = ".";
+        }
+    } elsif ($token->name eq 'StringEqual') {
+        $token->{data} = " === ";
+    } elsif ($token->name eq 'StringAdd') {
+        $token->{data} = " + ";
+    # } elsif ($token->name eq 'StringAddEqual') {
+        # $token->{data} = " = " . traverse($left, $context)->[0] . " + ";
+    } else {
+        $token->{data} = $self->cprint(ref($self) . ", " . $name . ": " . $data);
+    }
+
     return P2JS::Node::Branch->new(
         token => $self->token,
-        left  => $self->left->to_js_ast,
-        right => $self->right->to_js_ast,
-        next  => $self->next->to_js_ast,
+        left  => $self->left->to_js_ast($context),
+        right => $self->right->to_js_ast($context),
+        next  => $self->next->to_js_ast($context),
     );
 }
 

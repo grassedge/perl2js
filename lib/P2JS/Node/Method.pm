@@ -14,9 +14,17 @@ sub body {
 sub to_javascript {
     my ($self, $depth) = @_;
     return (
-        $self->indent($depth) . $self->token->data . "() {\n",
-        $self->body->to_javascript($depth),
-        $self->indent($depth) . "}\n",
+        $self->token->data . "() {\n",
+        ($self->body->is_nop ?
+         () :
+         ($self->indent($depth + 1),
+          $self->body->to_javascript($depth + 1),
+          "\n",
+         )
+        ),
+        $self->indent($depth),
+        "}",
+        ($self->next->is_nop ? () : ("\n" . $self->indent($depth))),
         $self->next->to_javascript($depth),
     );
 }

@@ -5,18 +5,19 @@ use warnings;
 use parent 'P2JS::Converter::Node';
 
 use P2JS::Converter::Node::Nop;
+use P2JS::Node::Nop;
 
 use P2JS::Node::Class;
 
 sub to_js_ast {
     my ($self, $context) = @_;
-    my $next = $self->next // P2JS::Node::Nop->new;
+    my $next = $self->next;
     my $class = P2JS::Node::Class->new(
         token => $self->token,
-        body  => $next->to_js_ast,
     );
     $context->push_class($class);
-    return;
+    $class->{body} = $next->to_js_ast($context);
+    return P2JS::Node::Nop->new;
 }
 
 1;

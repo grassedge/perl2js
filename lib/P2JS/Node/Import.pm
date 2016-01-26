@@ -1,4 +1,4 @@
-package P2JS::Node::Branch;
+package P2JS::Node::Import;
 
 use strict;
 use warnings;
@@ -6,22 +6,18 @@ use parent qw(P2JS::Node);
 
 use P2JS::Node::Nop;
 
-sub left {
+sub args {
     my ($self) = @_;
-    return $self->{left} // P2JS::Node::Nop->new;
-}
-
-sub right {
-    my ($self) = @_;
-    return $self->{right} // P2JS::Node::Nop->new;
+    return $self->{args} // P2JS::Node::Nop->new;
 }
 
 sub to_javascript {
     my ($self, $depth) = @_;
+    my $module_name = $self->token->data;
     return (
-        $self->left->to_javascript($depth),
+        "import ",
         $self->token->data,
-        $self->right->to_javascript($depth),
+        ";\n",
         ($self->next->is_nop ? () : (";\n" . $self->indent($depth))),
         $self->next->to_javascript($depth),
     );

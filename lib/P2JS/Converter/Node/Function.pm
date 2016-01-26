@@ -5,8 +5,8 @@ use parent 'P2JS::Converter::Node';
 
 use P2JS::Converter::Node::Nop;
 
-use P2JS::Node::ArrowFunction;
 use P2JS::Node::Function;
+use P2JS::Node::FunctionExpression;
 use P2JS::Node::Method;
 
 sub body {
@@ -26,12 +26,20 @@ sub to_js_ast {
 
     my $token = $self->token;
 
-    #my $is_code_ref = $token->name ne 'Function';
-    return P2JS::Node::Method->new(
-        token => $token,
-        body => $body->to_js_ast($context),
-        "next" => $next->to_js_ast($context)
-    );
+    my $is_code_ref = $token->name ne 'Function';
+    if ($is_code_ref) {
+        return P2JS::Node::FunctionExpression->new(
+            token => $token,
+            body => $body->to_js_ast($context),
+            "next" => $next->to_js_ast($context)
+        );
+    } else {
+        return P2JS::Node::Method->new(
+            token => $token,
+            body => $body->to_js_ast($context),
+            "next" => $next->to_js_ast($context)
+        );
+    }
 }
 
 1;

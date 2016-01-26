@@ -14,7 +14,7 @@ sub to_javascript {
     return (
         $self->indent($depth) . "function " . $self->token->data . "() {\n",
         $self->indent($depth) . "}\n",
-        $self->next->to_javascript
+        $self->next->to_javascript($depth)
     );
 }
 

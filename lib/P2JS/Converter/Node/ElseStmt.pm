@@ -3,7 +3,20 @@ use strict;
 use warnings;
 use parent 'P2JS::Converter::Node';
 
+use P2JS::Converter::Node::Nop;
+
+use P2JS::Node::ElseStmt;
+
 sub stmt { shift->{stmt} }
+
+sub to_js_ast {
+    my ($self, $context) = @_;
+    return P2JS::Node::ElseStmt->new(
+        token => $self->token,
+        stmt  => $self->stmt->to_js_ast($context),
+        next => $self->next->to_js_ast($context),
+    );
+}
 
 1;
 
