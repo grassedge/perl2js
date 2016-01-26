@@ -78,8 +78,8 @@ sub to_js_ast {
         $token->{data} = " === ";
     } elsif ($name eq 'StringAdd') {
         $token->{data} = " + ";
-    # } elsif ($name eq 'StringAddEqual') {
-        # $token->{data} = " = " . traverse($left, $context)->[0] . " + ";
+    } elsif ($name eq 'StringAddEqual') {
+        $token->{data} = " += ";
     } else {
         $token->{data} = $self->cprint(ref($self) . ", " . $name . ": " . $data);
     }
