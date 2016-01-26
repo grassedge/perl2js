@@ -4,7 +4,9 @@ use warnings;
 use parent 'P2JS::Converter::Node';
 
 use P2JS::Converter::Node::Nop;
+
 use P2JS::Node::Branch;
+use P2JS::Node::PropertyAccessor;
 
 sub left  { shift->{left}  // P2JS::Converter::Node::Nop->new; }
 sub right { shift->{right} // P2JS::Converter::Node::Nop->new; }
@@ -60,17 +62,21 @@ sub to_js_ast {
     } elsif ($name eq 'Or') {
         $token->{data} = " || ";
     } elsif ($name eq 'Pointer') {
-        if (ref($right) eq 'P2JS::Converter::Node::FunctionCall' &&
-            $right->token->data eq 'new') {
-            $token->{data} = 'new';
-        } elsif (ref($right) eq 'P2JS::Converter::Node::ArrayRef') {
-            $token->{data} = "";
-        } elsif (ref($right) eq 'P2JS::Converter::Node::HashRef') {
+        # if (ref($right) eq 'P2JS::Converter::Node::FunctionCall' &&
+        #     $right->token->data eq 'new') {
+        #     $token->{data} = 'new';
+        # } els
+        if ((ref($right) eq 'P2JS::Converter::Node::ArrayRef') ||
+            (ref($right) eq 'P2JS::Converter::Node::HashRef')) {
+
             my $data_node = $right->data_node;
-            # push @sentence, @{traverse($left, $context)};
-            # push @sentence, '[';
-            # push @sentence, @{traverse($data_node, $context)};
-            # push @sentence, ']';
+            my $key = $right->data_node;
+            return P2JS::Node::PropertyAccessor->new(
+                # token => $self->token,
+                data  => $left->to_js_ast($context),
+                key   => $key->to_js_ast($context),
+                next  => $self->next->to_js_ast($context),
+            );
         } else {
             $token->{data} = ".";
         }
