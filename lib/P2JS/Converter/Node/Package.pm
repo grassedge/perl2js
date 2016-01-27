@@ -11,12 +11,15 @@ use P2JS::Node::Class;
 
 sub to_js_ast {
     my ($self, $context) = @_;
-    my $next = $self->next;
+    my $token = $self->token;
+    my $class_name = $token->data;
+    $class_name =~ s/.+:://g;
+    $token->{data} = $class_name;
     my $class = P2JS::Node::Class->new(
         token => $self->token,
     );
     $context->push_class($class);
-    $class->{body} = $next->to_js_ast($context);
+    $class->{body} = $self->next->to_js_ast($context);
     return P2JS::Node::Nop->new;
 }
 

@@ -14,7 +14,9 @@ sub body {
 sub to_javascript {
     my ($self, $depth) = @_;
     return (
-        "class " . $self->token->data . " {\n",
+        "class ", $self->token->data,
+        ($self->{super_class} ? (" extends ", $self->{super_class}) : ()),
+        " {\n",
         ($self->body->is_nop ?
          () :
          ($self->indent($depth + 1),
