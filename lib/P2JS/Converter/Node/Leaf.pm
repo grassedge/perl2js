@@ -12,8 +12,8 @@ sub to_js_ast {
     my $data = $token->data;
 
     my $current_class = '';
-    if ($context->classes->[-1]) {
-        $current_class = $context->classes->[-1]->token->data;
+    if ($context->current_class) {
+        $current_class = $context->current_class->token->data;
     }
 
     if ($name eq 'Int') {
@@ -49,13 +49,11 @@ sub to_js_ast {
         my $data = $self->data;
         $token->{data} = $data;
     } elsif ($name eq 'Var') {
-        if ($data eq '$self') {
-            $token->{data} = "this";
-        } elsif ($data eq '$class') {
-            $token->{data} = $current_class;
-        } else {
-            $token->{data} = substr($data, 1);
+        my $trimmed = substr($data, 1);
+        if ($trimmed eq 'ENV') {
+            $trimmed = 'process.env';
         }
+        $token->{data} = $trimmed;
     } elsif ($name eq 'SpecificKeyword') {
         if ($data eq '__PACKAGE__') {
             $token->{data} = $current_class;
@@ -78,6 +76,7 @@ sub to_js_ast {
 
     return P2JS::Node::Leaf->new(
         token => $self->token,
+        next  => $self->next->to_js_ast($context),
     );
 }
 
