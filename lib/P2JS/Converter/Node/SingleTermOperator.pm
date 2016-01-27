@@ -3,6 +3,30 @@ use strict;
 use warnings;
 use parent 'P2JS::Converter::Node';
 
-sub expr { shift->{expr} }
+use P2JS::Converter::Node::Nop;
+
+use P2JS::Node::PostSingleTermOperator;
+use P2JS::Node::PreSingleTermOperator;
+
+sub expr { shift->{expr} // P2JS::Converter::Node::Nop->new; }
+
+sub to_js_ast {
+    my ($self, $context) = @_;
+    my $token = $self->token;
+    if ($token->data eq '++' ||
+        $token->data eq '--') {
+        return P2JS::Node::PostSingleTermOperator->new(
+            token => $self->token,
+            expr  => $self->expr->to_js_ast($context),
+            next  => $self->next->to_js_ast($context),
+        );
+    } else {
+        return P2JS::Node::PreSingleTermOperator->new(
+            token => $self->token,
+            expr  => $self->expr->to_js_ast($context),
+            next  => $self->next->to_js_ast($context),
+        );
+    }
+}
 
 1;
