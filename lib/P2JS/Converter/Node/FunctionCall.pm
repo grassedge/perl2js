@@ -15,6 +15,17 @@ sub args {
 sub to_js_ast {
     my ($self, $context) = @_;
     my $token = $self->token;
+    my $function_name = $token->data;
+    my $name = $token->name;
+    if ($name eq 'BuiltinFunc') {
+        if ($function_name eq 'print') {
+            $token->{data} = 'console.log';
+        } elsif ($function_name eq 'warn')  {
+            $token->{data} = 'console.warn';
+        } elsif ($function_name eq 'ref')  {
+            $token->{data} = 'typeof';
+        }
+    }
 
     return P2JS::Node::FunctionCall->new(
         token => $token,
