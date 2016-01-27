@@ -23,6 +23,8 @@ sub to_js_ast {
         $token->{data} = ", ";
     } elsif ($name eq 'AlphabetOr') {
         $token->{data} = " || ";
+    } elsif ($name eq 'AlphabetAnd') {
+        $token->{data} = " && ";
     } elsif ($name eq 'And') {
         $token->{data} = " && ";
     } elsif ($name eq 'Arrow') {
@@ -51,6 +53,8 @@ sub to_js_ast {
         $token->{data} = " " . $token->data . " ";
     } elsif ($name eq 'EqualEqual') {
         $token->{data} = " == ";
+    } elsif ($name eq 'NotEqual') {
+        $token->{data} = " != ";
     } elsif ($name eq 'Greater') {
         $token->{data} = " > ";
     } elsif ($name eq 'GreaterEqual') {
@@ -82,6 +86,8 @@ sub to_js_ast {
         }
     } elsif ($name eq 'StringEqual') {
         $token->{data} = " === ";
+    } elsif ($name eq 'StringNotEqual') {
+        $token->{data} = " !== ";
     } elsif ($name eq 'StringAdd') {
         $token->{data} = " + ";
     } elsif ($name eq 'StringAddEqual') {
