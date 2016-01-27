@@ -101,12 +101,19 @@ sub shift_comma_branch {
     };
 }
 
-my $INDENT = '    ';
+# P2JS::Converter::Node::Block
+# P2JS::Converter::Node::CodeDereference
+# P2JS::Converter::Node::ControlStmt
+# P2JS::Converter::Node::DoStmt
+# P2JS::Converter::Node::ForStmt
+# P2JS::Converter::Node::ForeachStmt
+# P2JS::Converter::Node::Handle
+# P2JS::Converter::Node::HandleRead
+# P2JS::Converter::Node::Label
+# P2JS::Converter::Node::RegReplace
+# P2JS::Converter::Node::Regexp
 
 my $skip_nodes = [];
-my $current_package = '';
-my $current_class = '';
-
 sub traverse {
     my ($node, $context) = @_;
     my $current = $node;
@@ -119,224 +126,25 @@ sub traverse {
         my $parent = $current->parent;
 
         if ($pkg eq '') {
-        } elsif ($pkg eq 'P2JS::Converter::Node::Array') {
-            my $idx = $current->idx;
-            my $name = substr($token->data, 1);
-            if ($name eq '_') {
-                if ($idx == 0) {
-                    push @sentence, 'this';
-                } else {
-                    push @sentence, 'arguments';
-                    push @sentence, @{traverse($idx, $context)};
-                }
-            } else {
-                push @sentence, $name;
-                push @sentence, @{traverse($idx, $context)};
-            }
-        } elsif ($pkg eq 'P2JS::Converter::Node::ArrayRef') {
-            my $data_node = $current->data_node;
-            push @sentence, '[';
-            push @sentence, @{traverse($data_node, $context)};
-            push @sentence, ']';
-        # } elsif ($pkg eq 'P2JS::Converter::Node::Block') {
-        } elsif ($pkg eq 'P2JS::Converter::Node::Branch') {
-            my $left  = $current->left;
-            my $right = $current->right;
-            my $name = $token->name;
-            my $data = $token->data;
 
-            # if Assign branch is compiled as function parameters, skip this loop.
-            my $skip = 0;
-
-            if ($token->name eq 'Comma') {
-                $data = $token->data . " ";
-            } elsif ($token->name eq 'AlphabetOr') {
-                $data = " || ";
-            } elsif ($token->name eq 'And') {
-                $data = " && ";
-            } elsif ($token->name eq 'Arrow') {
-                $data = ' : ';
-            } elsif ($token->name eq 'Assign') {
-                for my $skip_node (@$skip_nodes) {
-                    if ($left == $skip_node) {
-                        $skip = 1;
-                    }
-                }
-                if ($left->token->name eq 'LocalHashVar' &&
-                    ref($right) eq 'P2JS::Converter::Node::List'
-                    ) {
-                    my $arrayref = bless +{
-                        data => $right,
-                        indent => $right->indent
-                    }, 'P2JS::Converter::Node::HashRef';
-                    $right->{parent} = $arrayref;
-                    $right = $arrayref;
-                }
-                if ($left->token->name eq 'LocalArrayVar' &&
-                    ref($right) eq 'P2JS::Converter::Node::List'
-                    ) {
-                    my $arrayref = bless +{
-                        data => $right,
-                        indent => $right->indent
-                    }, 'P2JS::Converter::Node::ArrayRef';
-                    $right->{parent} = $arrayref;
-                    $right = $arrayref;
-                }
-                $data = " " . $token->data . " ";
-            } elsif ($name eq 'EqualEqual') {
-                $data = " == ";
-            } elsif ($name eq 'GreaterEqual') {
-                $data = " >= ";
-            } elsif ($token->name eq 'Or') {
-                $data = " || ";
-            } elsif ($token->name eq 'Pointer') {
-                if (ref($right) eq 'P2JS::Converter::Node::FunctionCall' &&
-                    $right->token->data eq 'new') {
-                    $data = 'new';
-                } elsif (ref($right) eq 'P2JS::Converter::Node::ArrayRef') {
-                    $data = "";
-                } elsif (ref($right) eq 'P2JS::Converter::Node::HashRef') {
-                    my $data_node = $right->data_node;
-                    $skip = 1;
-                    push @sentence, @{traverse($left, $context)};
-                    push @sentence, '[';
-                    push @sentence, @{traverse($data_node, $context)};
-                    push @sentence, ']';
-                } else {
-                    $data = ".";
-                }
-            } elsif ($token->name eq 'StringEqual') {
-                $data = " === ";
-            } elsif ($token->name eq 'StringAdd') {
-                $data = " + ";
-            } elsif ($token->name eq 'StringAddEqual') {
-                $data = " = " . traverse($left, $context)->[0] . " + ";
-            } else {
-                push @sentence, cprint(ref($current) . ", " . $name . ": " . $data);
-            }
-
-            if ($skip) {
-            } elsif ($data eq 'new') {
-                push @sentence, $data . ' ';
-                push @sentence, @{traverse($left, $context)};
-                push @sentence, '(';
-                my $args = $right->{args}->[0];
-                push @sentence, @{traverse($right->{args}->[0], $context)};
-                push @sentence, ")";
-            } else {
-                push @sentence, @{traverse($left, $context)};
-                push @sentence, $data;
-                push @sentence, @{traverse($right, $context)};
-            }
-
-        # } elsif ($pkg eq 'P2JS::Converter::Node::CodeDereference') {
-        # } elsif ($pkg eq 'P2JS::Converter::Node::ControlStmt') {
         } elsif ($pkg eq 'P2JS::Converter::Node::Dereference') {
             my $name = $token->name;
             my $data = $token->data;
             my $trimmed = substr($data, 2);
-            if ($name eq 'ArrayDereference') {
-                push @sentence, @{traverse($current->expr, $context)};
-            } elsif ($name eq 'HashDereference') {
-                push @sentence, @{traverse($current->expr, $context)};
-            } elsif ($name eq 'ShortArrayDereference') {
+            if ($name eq 'ShortArrayDereference') {
                 push @sentence, $trimmed;
             } elsif ($name eq 'ShortHashDereference') {
                 push @sentence, $trimmed;
             } else {
                 push @sentence, cprint(ref($current) . ", " . $name . ": " . $data);
             }
-        # } elsif ($pkg eq 'P2JS::Converter::Node::DoStmt') {
-        } elsif ($pkg eq 'P2JS::Converter::Node::ElseStmt') {
-            push @sentence, "e {\n";
-            push @sentence, $INDENT x ($depth + 1);
-            push @sentence, @{traverse($current->stmt, $context)};
-            push @sentence, ";\n";
-            push @sentence, $INDENT x $depth;
-            push @sentence, "}";
-        # } elsif ($pkg eq 'P2JS::Converter::Node::ForStmt') {
-        # } elsif ($pkg eq 'P2JS::Converter::Node::ForeachStmt') {
-        } elsif ($pkg eq 'P2JS::Converter::Node::Function') {
-            my $body = $current->body;
-            my $function_name = $token->data;
-            my $code_ref = $token->name ne 'Function';
-
-            # parameter detection
-            # TODO: shift operator, multiple assignment.
-            my $parameters;
-            my $method = '';
-            if ($body) {
-                my $assign = search($body, {
-                    ref => 'P2JS::Converter::Node::Branch',
-                    name => 'Assign'
-                });
-                if ($assign &&
-                    $assign->right->token->name eq 'ArgumentArray' &&
-                    ref($assign->left) eq 'P2JS::Converter::Node::List') {
-                    $parameters = $assign->left; # Node::List
-
-                    push(@$skip_nodes, $parameters);
-
-                    my $comma = $parameters->data_node; # Node::Branch / Comma
-                    my $parent_comma = $comma;
-                    my $most_left;
-                    if (ref($parent_comma) ne 'P2JS::Converter::Node::Branch') {
-                        $most_left = $parent_comma;
-                    } else {
-                        while (ref($parent_comma->left) eq 'P2JS::Converter::Node::Branch') {
-                            $parent_comma = $parent_comma->left;
-                        }
-                        $most_left = $parent_comma->left;
-                    }
-
-                    if ($most_left->token->data eq '$self') {
-                        $parameters->{data} =
-                            shift_comma_branch($parameters->data_node)->{new_root};
-                        $method = 'instance';
-                    }
-                    if ($most_left->token->data eq '$class') {
-                        $parameters->{data} =
-                            shift_comma_branch($parameters->data_node)->{new_root};
-                        $method = 'class';
-                    }
-                }
-            }
-            if ($code_ref) {
-                push @sentence, "(";
-            } else {
-                if ($method eq 'instance') {
-                    push @sentence, "${function_name}(";
-                } elsif ($method eq 'class') {
-                    push @sentence, "static ${function_name}(";
-                } else {
-                    push @sentence, "static ${function_name}(";
-                }
-            }
-            push @sentence, @{traverse($parameters, $context)};
-            if ($code_ref) {
-                push @sentence, ") => {";
-            } else {
-                push @sentence, ") {";
-            }
-            if ($body) {
-                push @sentence, "\n";
-                push @sentence, $INDENT x ($depth + 1);
-                push @sentence, @{traverse($body, $context)};
-            }
-            push @sentence, "\n";
-            push @sentence, $INDENT x ($depth);
-            push @sentence, "}";
 
         } elsif ($pkg eq 'P2JS::Converter::Node::FunctionCall') {
             my $function_name = $token->data;
             my $name = $token->name;
             my $args = $current->{args}->[0];
             if ($name eq 'BuiltinFunc') {
-                if ($function_name eq 'push @sentence,') { $function_name = 'console.log'; }
-                elsif ($function_name eq 'warn')  { $function_name = 'console.warn'; }
-                elsif ($function_name eq 'ref')  { $function_name = 'typeof'; }
-                elsif ($function_name eq 'sprintf') {  } # TODO. need to supply runtime.
-                elsif ($function_name eq 'pop')  {
+                if ($function_name eq 'pop')  {
                     # pop take just one parameter.
                     push @sentence, @{traverse($args, $context)};
                     push @sentence, '.';
@@ -400,229 +208,9 @@ sub traverse {
                     push @sentence, cprint(ref($current) . ", " . $name . ": " . $function_name);
                 }
             }
-            push @sentence, "$function_name(";
-            push @sentence, @{traverse($args, $context)};
-            push @sentence, ")";
 
-        # } elsif ($pkg eq 'P2JS::Converter::Node::Handle') {
-        # } elsif ($pkg eq 'P2JS::Converter::Node::HandleRead') {
-        } elsif ($pkg eq 'P2JS::Converter::Node::Hash') {
-            my $key = $current->key;
-            my $name = substr($token->data, 1);
-            if ($name eq 'ENV') {
-                push @sentence, 'process.env';
-            } else {
-                push @sentence, $name;
-            }
-            push @sentence, '[';
-            push @sentence, @{traverse($key && $key->data_node, $context)};
-            push @sentence, ']';
-
-        } elsif ($pkg eq 'P2JS::Converter::Node::HashRef') {
-            my $data_node = $current->data_node;
-            push @sentence, '{ ';
-            push @sentence, @{traverse($data_node, $context)};
-            push @sentence, ' }';
-        } elsif ($pkg eq 'P2JS::Converter::Node::IfStmt') {
-            my $true_stmt = $current->true_stmt;
-            my $false_stmt = $current->false_stmt;
-            my $expr = $current->expr;
-            my $data = $token->data;
-
-            if ($data eq 'unless') {
-                push @sentence, "if (!(";
-            } else {
-                push @sentence, "if (";
-            }
-            push @sentence, @{traverse($expr, $context)};
-            if ($data eq 'unless') {
-                push @sentence, ")) {\n";
-            } else {
-                push @sentence, ") {\n";
-            }
-            push @sentence, $INDENT x ($depth + 1);
-
-            push @sentence, @{traverse($true_stmt, $context)};
-
-            push @sentence, ";\n";
-            push @sentence, $INDENT x $depth;
-            push @sentence, "}";
-            if ($false_stmt) {
-                push @sentence, " els";
-
-                push @sentence, @{traverse($false_stmt, $context)};
-            }
-        # } elsif ($pkg eq 'P2JS::Converter::Node::Label') {
-        } elsif ($pkg eq 'P2JS::Converter::Node::Leaf') {
-            my $name = $token->name;
-            my $data = $token->data;
-            if ($name eq 'Int') {
-                push @sentence, $data;
-            } elsif ($name eq 'Default') {
-                if ($data eq 'undef') {
-                    push @sentence, 'undefined';
-                } else {
-                    push @sentence, cprint(ref($current) . ", " . $name . ": " . $data);
-                }
-            } elsif ($name eq 'ArgumentArray') {
-                push @sentence, "arguments";
-            } elsif ($name eq 'LocalVar') {
-                push @sentence, "var " . substr($data, 1);
-            } elsif ($name eq 'LocalArrayVar') {
-                push @sentence, "var " . substr($data, 1);
-            } elsif ($name eq 'LocalHashVar') {
-                push @sentence, "var " . substr($data, 1);
-            } elsif ($name eq 'GlobalVar') {
-                push @sentence, substr($data, 1);
-            } elsif ($name eq 'GlobalHashVar') {
-                push @sentence, substr($data, 1);
-            } elsif ($name eq 'Key') {
-                push @sentence, '"' . $data . '"';
-                # push @sentence, $data;
-            } elsif ($name eq 'Namespace') {
-                $data =~ s/.+:://;
-                push @sentence, $data;
-            } elsif ($name eq 'HashVar') {
-                push @sentence, substr($data, 1);
-            } elsif ($name eq 'ArrayVar') {
-                push @sentence, substr($data, 1);
-            } elsif ($name eq 'RegExp') {
-                my $data = $current->data;
-                push @sentence, $data;
-            } elsif ($name eq 'Var') {
-                if ($data eq '$self') {
-                    push @sentence, "this";
-                } elsif ($data eq '$class') {
-                    push @sentence, $current_class;
-                } else {
-                    push @sentence, substr($data, 1);
-                }
-            } elsif ($name eq 'SpecificKeyword') {
-                if ($data eq '__PACKAGE__') {
-                    push @sentence, $current_class;
-                } else {
-                    push @sentence, cprint(ref($current) . ", " . $name . ": " . $data);
-                }
-            } elsif ($name eq 'SpecificValue') {
-                if ($data eq '$_') {
-                    push @sentence, $data;
-                } else {
-                    push @sentence, cprint(ref($current) . ", " . $name . ": " . $data);
-                }
-            } elsif ($name eq 'String') {
-                push @sentence, '"' . $data . '"';
-            } elsif ($name eq 'RawString') {
-                push @sentence, "'" . $data . "'";
-            } else {
-                push @sentence, cprint(ref($current) . ", " . $name . ": " . $data);
-            }
-
-        } elsif ($pkg eq 'P2JS::Converter::Node::List') {
-            my $data = $current->data_node;
-            push @sentence, @{traverse($data, $context)};
-
-        } elsif ($pkg eq 'P2JS::Converter::Node::Module') {
-            my $module_name = $token->data;
-            if ($module_name ~~ ['strict', 'warnings', 'utf8']) { }
-            elsif ($module_name eq 'constant') {
-                push @sentence, cprint 'TODO. "use constant" to const';
-            }
-            elsif ($module_name ~~ ['base', 'parent']) {
-                my $base_name = $current->args->expr->token->data;
-                my $path = $base_name;
-                $path =~ s/::/\//g;
-                $base_name =~ s/.+:://g;
-                push @{$context->{imports}}, "import { ${base_name} } from '${path}'";
-            } else {
-                my $path = $module_name;
-                $path =~ s/::/\//g;
-                $module_name =~ s/.+:://g;
-                push @{$context->{imports}}, "import { ${module_name} } from '${path}'";
-            }
-
-        } elsif ($pkg eq 'P2JS::Converter::Node::Package') {
-            my $class_name = $token->data;
-            $class_name =~ s/.+:://g;
-            # TODO: support Mixin.
-            my ($base) = grep {
-                $_->data ~~ ['base', 'parent']
-            } @{$current->find(node => 'Module')};
-            if ($base) {
-                my $base_name = $base->args->expr->token->data;
-                $base_name =~ s/.+:://g;
-                push @sentence, "class ${class_name} extends ${base_name} {\n";
-            } else {
-                push @sentence, "class ${class_name} {\n";
-            }
-            $current_class = $class_name;
-            $current_package = $class_name;
-
-        } elsif ($pkg eq 'P2JS::Converter::Node::RegPrefix') {
-            my $name = $token->name;
-            if ($name eq 'RegQuote') {
-                push @sentence, "'";
-                push @sentence, @{traverse($current->expr, $context)};
-                push @sentence, "'";
-            } else {
-                push @sentence, cprint(ref($current) . ", " . $current->token->data);
-            }
-        # } elsif ($pkg eq 'P2JS::Converter::Node::RegReplace') {
-        # } elsif ($pkg eq 'P2JS::Converter::Node::Regexp') {
-        } elsif ($pkg eq 'P2JS::Converter::Node::Return') {
-            my $body = $current->body;
-            push @sentence, 'return ';
-            push @sentence, @{traverse($body, $context)};
-        } elsif ($pkg eq 'P2JS::Converter::Node::SingleTermOperator') {
-            push @sentence, $token->data;
-            push @sentence, @{traverse($current->expr, $context)};
-
-        } elsif ($pkg eq 'P2JS::Converter::Node::ThreeTermOperator') {
-            my $cond = $current->cond;
-            my $true_expr = $current->true_expr;
-            my $false_expr = $current->false_expr;
-            push @sentence, @{traverse($cond, $context)};
-            push @sentence, ' ? ';
-            push @sentence, @{traverse($true_expr, $context)};
-            push @sentence, ' : ';
-            push @sentence, @{traverse($false_expr, $context)};
-        } elsif ($pkg eq 'P2JS::Converter::Node::WhileStmt') {
-            my $true_stmt = $current->true_stmt;
-            my $expr = $current->expr;
-            my $data = $token->data;
-            if ($data eq 'until') {
-                push @sentence, "while (!(";
-            } else {
-                push @sentence, "while (";
-            }
-            push @sentence, @{traverse($expr, $context)};
-            if ($data eq 'until') {
-                push @sentence, ")) {\n";
-            } else {
-                push @sentence, ") {\n";
-            }
-            push @sentence, $INDENT x ($depth + 1);
-
-            push @sentence, @{traverse($true_stmt, $context)};
-
-            push @sentence, ";\n";
-            push @sentence, $INDENT x $depth;
-            push @sentence, "}";
-        } else {
-            push @sentence, "\n";
-            push @sentence, $INDENT x $depth;
-            push @sentence, cprint(ref($current) . ", " . $current->token->data);
-            push @sentence, "\n";
         }
-
-        my $next = $current->next;
-        if ($next && scalar @sentence) {
-            push @sentence, ";\n";
-            push @sentence, $INDENT x $depth;
-        }
-        push @block, @sentence;
-        $current = $next;
     }
-    return \@block;
 }
 
 1;
