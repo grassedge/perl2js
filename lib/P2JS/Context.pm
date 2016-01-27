@@ -28,7 +28,8 @@ sub push_class {
 }
 
 sub current_class {
-    
+    my ($self) = @_;
+    return $self->classes->[-1];
 }
 
 1;
