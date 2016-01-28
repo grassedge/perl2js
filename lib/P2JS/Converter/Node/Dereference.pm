@@ -3,7 +3,19 @@ use strict;
 use warnings;
 use parent 'P2JS::Converter::Node';
 
+use P2JS::Converter::Node::Nop;
+
 sub expr { shift->{expr} }
+
+sub to_js_ast {
+    my ($self, $context) = @_;
+    my $name = $self->token->name;
+    # if ($name eq )
+    $self->expr->{next} = $self->next;
+    return (
+        $self->expr->to_js_ast($context)
+    );
+}
 
 1;
 
