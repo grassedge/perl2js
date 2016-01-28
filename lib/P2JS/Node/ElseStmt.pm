@@ -14,7 +14,7 @@ sub stmt {
 sub to_javascript {
     my ($self, $depth) = @_;
     return (
-        "e {\n",
+        "{\n",
         ($self->stmt->is_nop ?
          () :
          ($self->indent($depth + 1),

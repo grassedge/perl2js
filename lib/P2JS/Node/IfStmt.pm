@@ -38,7 +38,7 @@ sub to_javascript {
         "}",
         ($self->false_stmt->is_nop ?
          () :
-         (" els",
+         (" else ",
           $self->false_stmt->to_javascript($depth),
          )
         ),
