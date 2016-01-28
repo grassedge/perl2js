@@ -18,6 +18,8 @@ sub to_javascript {
         ($self->body->is_nop ?
          () :
          ($self->indent($depth + 1),
+          "if (this !== undefined) { Array.prototype.unshift.call(arguments, this) }\n",
+          $self->indent($depth + 1),
           $self->body->to_javascript($depth + 1),
           "\n",
          )
