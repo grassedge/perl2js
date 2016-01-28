@@ -27,29 +27,45 @@ sub to_js_ast {
     } elsif ($name eq 'ArgumentArray') {
         $token->{data} = "arguments";
     } elsif ($name eq 'LocalVar') {
-        $token->{data} = "var " . substr($data, 1);
+        $token->{data} = "var " . $data;
     } elsif ($name eq 'LocalArrayVar') {
-        $token->{data} = "var " . substr($data, 1);
+        $token->{data} = "var " . substr($data, 1) . "_a";
     } elsif ($name eq 'LocalHashVar') {
-        $token->{data} = "var " . substr($data, 1);
+        $token->{data} = "var " . substr($data, 1) . "_h";
     } elsif ($name eq 'GlobalVar') {
-        $token->{data} = substr($data, 1);
+        $token->{data} = $data;
+    } elsif ($name eq 'GlobalArrayVar') {
+        $token->{data} = substr($data, 1) . "_a";
     } elsif ($name eq 'GlobalHashVar') {
-        $token->{data} = substr($data, 1);
+        $token->{data} = substr($data, 1) . "_h";
+    } elsif ($name eq 'Var') {
+        my $trimmed = substr($data, 1);
+        if ($trimmed eq 'ENV') {
+            $token->{data} = 'process.env';
+        } else {
+            $token->{data} = $data;
+        }
+    } elsif ($name eq 'ArrayVar') {
+        $token->{data} = substr($data, 1) . "_a";
+    } elsif ($name eq 'HashVar') {
+        $token->{data} = substr($data, 1) . "_h";
     } elsif ($name eq 'Key') {
         $token->{data} = '"' . $data . '"';
     } elsif ($name eq 'Namespace') {
         $data =~ s/.+:://;
         $token->{data} = $data;
-    } elsif ($name eq 'HashVar') {
-        $token->{data} = substr($data, 1);
-    } elsif ($name eq 'ArrayVar') {
-        $token->{data} = substr($data, 1);
     } elsif ($name eq 'RegExp') {
         my $data = $self->data;
         $token->{data} = $data;
-    } elsif ($name eq 'Var') {
-        my $trimmed = substr($data, 1);
+    } elsif ($name eq 'ShortScalarDereference') {
+        # my $trimmed = substr($data, 1);
+        # $token->{data} = $trimmed;
+        $token->{data} = $data;
+    } elsif ($name eq 'ShortArrayDereference') {
+        my $trimmed = substr($data, 2) . "_a";
+        $token->{data} = "..." . $trimmed;
+    } elsif ($name eq 'ShortHashDereference') {
+        my $trimmed = substr($data, 2) . "_h";
         if ($trimmed eq 'ENV') {
             $trimmed = 'process.env';
         }

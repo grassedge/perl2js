@@ -9,6 +9,20 @@ use Module::Load;
 
 use P2JS::Context;
 
+# http://perldoc.perl.org/perlfunc.html
+my $runtime = {
+    'print'  => "function print() { console.log(...arguments) }\n",
+    'warn'   => "function warn() { console.log(...arguments) }\n",
+    'ref'    => "function ref(a) { return typeof(a) }\n",
+    'pop'    => "function pop(a) { return a.pop() }\n",
+    # 'push'   => "function push(a) { }\n",
+    # 'map'    => "function map(a) { }\n",
+    # 'splice' => "function splice(a) { }\n",
+    'bless'  => "function bless(obj, proto) { return Object.create(proto, obj) }\n",
+    # 'join'   => "function join(a) { }\n",
+    'length' => "function length(a) { return a.length }\n",
+};
+
 sub convert {
     my ($class, $script) = @_;
 

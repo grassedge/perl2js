@@ -18,13 +18,7 @@ sub to_js_ast {
     my $function_name = $token->data;
     my $name = $token->name;
     if ($name eq 'BuiltinFunc') {
-        if ($function_name eq 'print') {
-            $token->{data} = 'console.log';
-        } elsif ($function_name eq 'warn')  {
-            $token->{data} = 'console.warn';
-        } elsif ($function_name eq 'ref')  {
-            $token->{data} = 'typeof';
-        }
+        $context->{runtime}{builtinfunc}{$name} = 1;
     }
 
     return P2JS::Node::FunctionCall->new(
