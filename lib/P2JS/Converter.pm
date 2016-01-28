@@ -31,7 +31,9 @@ sub convert {
 
     return join(
         '',
+        "'use strict;'\n",
         (map { $_->to_javascript(0) } @{$context->imports}),
+        "\n",
         (map { $_->to_javascript(0) } @{$context->classes}),
     );
 }
