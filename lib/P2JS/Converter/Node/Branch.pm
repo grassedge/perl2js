@@ -91,6 +91,21 @@ sub to_js_ast {
         $token->{data} = " <= ";
     } elsif ($name eq 'Or') {
         $token->{data} = " || ";
+    } elsif ($name eq 'OrEqual') {
+        return P2JS::Converter::Node::Branch->new(
+            token => bless({
+                name => 'Assign'
+            }, 'Compiler::Lexer::Token'),
+            left => $left,
+            right => P2JS::Converter::Node::Branch->new(
+                token => bless({
+                    name => 'Or'
+                }, 'Compiler::Lexer::Token'),
+                left => $left,
+                right => $right
+            ),
+            next => $self->next,
+        )->to_js_ast($context);
     } elsif ($name eq 'Pointer') {
         # if (ref($right) eq 'P2JS::Converter::Node::FunctionCall' &&
         #     $right->token->data eq 'new') {
