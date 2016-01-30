@@ -52,7 +52,14 @@ sub to_js_ast {
             $right->{parent} = $arrayref;
             $right = $arrayref;
         }
-        $token->{data} = " " . $token->data . " ";
+        if (ref($left) eq 'P2JS::Converter::Node::List') {
+            my $arrayref = bless +{
+                data => $left,
+            }, 'P2JS::Converter::Node::ArrayRef';
+            $left->{parent} = $arrayref;
+            $left = $arrayref;
+        }
+        $token->{data} = " = ";
     } elsif ($name eq 'EqualEqual') {
         $token->{data} = " == ";
     } elsif ($name eq 'NotEqual') {
