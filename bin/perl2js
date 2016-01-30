@@ -14,4 +14,4 @@ if ($filename) {
     $script = join('', <STDIN>);
 }
 
-print P2JS::Converter->convert($script);
+print P2JS::Converter->new->convert($script);

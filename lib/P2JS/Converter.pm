@@ -34,13 +34,19 @@ my $runtime = {
     'length' => "function length(a) { return a.length }\n",
 };
 
-sub convert {
-    my ($class, $script) = @_;
+sub new {
+    my ($class) = @_;
+    return bless({
+        lexer => Compiler::Lexer->new(),
+        parser => Compiler::Parser->new(),
+    }, $class);
+}
 
-    my $lexer  = Compiler::Lexer->new();
-    my $tokens = $lexer->tokenize($script);
-    my $parser = Compiler::Parser->new();
-    my $ast = $parser->parse($tokens);
+sub convert {
+    my ($self, $script) = @_;
+
+    my $tokens = $self->{lexer}->tokenize($script);
+    my $ast = $self->{parser}->parse($tokens);
 
     $ast->walk(sub {
         my ($node) = @_;
