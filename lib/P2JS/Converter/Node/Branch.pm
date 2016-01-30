@@ -125,6 +125,22 @@ sub to_js_ast {
         } else {
             $token->{data} = ".";
         }
+    } elsif ($name eq 'Slice') {
+        return P2JS::Converter::Node::FunctionCall->new(
+            token => bless({
+                data => 'range',
+                name => 'RuntimeHelper'
+            }, 'Compiler::Lexer::Token'),
+            args => [ P2JS::Converter::Node::Branch->new(
+                token => bless({
+                    data => ',',
+                    name => 'Comma',
+                }, 'Compiler::Lexer::Token'),
+                left => $left,
+                right => $right,
+            ) ],
+            next => $self->next,
+        )->to_js_ast($context);
     } elsif ($name eq 'StringEqual') {
         $token->{data} = " === ";
     } elsif ($name eq 'StringNotEqual') {
@@ -133,14 +149,30 @@ sub to_js_ast {
         $token->{data} = " + ";
     } elsif ($name eq 'StringAddEqual') {
         $token->{data} = " += ";
+    } elsif ($name eq 'StringMul') {
+        return P2JS::Converter::Node::FunctionCall->new(
+            token => bless({
+                data => 'string_multi',
+                name => 'RuntimeHelper'
+            }, 'Compiler::Lexer::Token'),
+            args => [ P2JS::Converter::Node::Branch->new(
+                token => bless({
+                    data => ',',
+                    name => 'Comma',
+                }, 'Compiler::Lexer::Token'),
+                left => $left,
+                right => $right,
+            ) ],
+            next => $self->next,
+        )->to_js_ast($context);
     } else {
         $token->{data} = $self->cprint(ref($self) . ", " . $name . ": " . $data);
     }
 
     return P2JS::Node::Branch->new(
-        token => $self->token,
-        left  => $self->left->to_js_ast($context),
-        right => $self->right->to_js_ast($context),
+        token => $token,
+        left  => $left->to_js_ast($context),
+        right => $right->to_js_ast($context),
         next  => $self->next->to_js_ast($context),
     );
 }
