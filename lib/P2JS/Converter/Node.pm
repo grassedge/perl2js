@@ -24,7 +24,7 @@ sub is_nop {
 
 sub to_js_ast {
     my ($self) = @_;
-    warn "not implemented: " . ref ($self);
+    warn "\033[32m not implemented: " . ref ($self) . " \033[0m";
     return undef;
 }
 

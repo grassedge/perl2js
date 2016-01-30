@@ -32,7 +32,7 @@ sub indent {
 
 sub to_javascript {
     my ($self) = @_;
-    warn "to_javascript not implemented: " . ref($self);
+    return ("to_javascript not implemented: " . ref($self));
 }
 
 1;
