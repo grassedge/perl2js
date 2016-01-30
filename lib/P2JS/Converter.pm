@@ -13,6 +13,17 @@ use P2JS::Context;
 my $runtime = {
     'print'  => "function print() { console.log(...arguments) }\n",
     'warn'   => "function warn() { console.log(...arguments) }\n",
+    # SCALAR
+    # ARRAY
+    # HASH
+    # CODE
+    # REF
+    # GLOB
+    # LVALUE
+    # FORMAT
+    # IO
+    # VSTRING
+    # Regexp
     'ref'    => "function ref(a) { return typeof(a) }\n",
     'pop'    => "function pop(a) { return a.pop() }\n",
     # 'push'   => "function push(a) { }\n",
