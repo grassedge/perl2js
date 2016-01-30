@@ -57,8 +57,7 @@ sub search {
 
 sub cprint {
     my ($self, $str) = @_;
-    # print "\033[32m /* " . $str . " */ \033[0m";
-    return "\033[32m /* " . $str . " */ \033[0m";
+    return "/* \033[32m " . $str . " \033[0m */";
 }
 
 sub remove_node {
