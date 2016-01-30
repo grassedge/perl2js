@@ -24,7 +24,9 @@ sub to_js_ast {
         $module_name eq 'base' ||
         $module_name eq 'parent'
     ) {
-        my $base_name = $self->args->expr->token->data;
+        my $base_name = ref($self->args) eq 'P2JS::Converter::Node::Leaf'
+            ? $self->args->token->data
+            : $self->args->expr->token->data;
         $self->token->{data} = $base_name;
         my $import = P2JS::Node::Import->new(
             token => $self->token,
