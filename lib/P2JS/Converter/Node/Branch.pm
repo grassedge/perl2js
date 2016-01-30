@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use parent 'P2JS::Converter::Node';
 
+use P2JS::Converter::Node::FunctionCall;
 use P2JS::Converter::Node::Nop;
 
 use P2JS::Node::Branch;
@@ -60,6 +61,22 @@ sub to_js_ast {
             $left = $arrayref;
         }
         $token->{data} = " = ";
+    } elsif ($name eq 'DefaultOperator') {
+        return P2JS::Converter::Node::FunctionCall->new(
+            token => bless({
+                data => 'default_or',
+                name => 'RuntimeHelper'
+            }, 'Compiler::Lexer::Token'),
+            args => [ P2JS::Converter::Node::Branch->new(
+                token => bless({
+                    data => ',',
+                    name => 'Comma',
+                }, 'Compiler::Lexer::Token'),
+                left => $left,
+                right => $right,
+            ) ],
+            next => $self->next,
+        )->to_js_ast($context);
     } elsif ($name eq 'EqualEqual') {
         $token->{data} = " == ";
     } elsif ($name eq 'NotEqual') {
