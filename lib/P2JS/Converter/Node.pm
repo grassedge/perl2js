@@ -102,11 +102,11 @@ sub shift_comma_branch {
 
 # P2JS::Converter::Node::Block
 # P2JS::Converter::Node::CodeDereference
-# P2JS::Converter::Node::DoStmt
 # P2JS::Converter::Node::Handle
 # P2JS::Converter::Node::HandleRead
 # P2JS::Converter::Node::Label
 # P2JS::Converter::Node::RegReplace
+# P2JS::Converter::Node::RegPrefix
 # P2JS::Converter::Node::Regexp
 
 1;
