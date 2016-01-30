@@ -19,11 +19,17 @@ sub to_js_ast {
     } else {
         $key = $self->idx;
     }
+    my $data;
+    if ($self->data eq '$_') {
+        $data = 'arguments';
+    } else {
+        $data = $self->data;
+    }
     return P2JS::Node::PropertyAccessor->new(
         token => $self->token,
         data  => P2JS::Converter::Node::Leaf->new(
             token => bless({
-                data => $self->data,
+                data => $data,
                 name => 'Var',
             }, 'Compiler::Lexer::Token')
         )->to_js_ast($context),
