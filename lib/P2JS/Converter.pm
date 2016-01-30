@@ -50,6 +50,7 @@ sub convert {
 
     $ast->walk(sub {
         my ($node) = @_;
+        delete $node->{parent};
         my $ref = ref($node);
         $ref =~ s/Compiler::Parser/P2JS::Converter/;
         load $ref;
