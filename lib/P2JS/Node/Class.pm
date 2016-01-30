@@ -26,6 +26,7 @@ sub to_javascript {
         ),
         $self->indent($depth),
         "}\n",
+        "export { " . $self->token->data . " }\n",
         ($self->next->is_nop ? () : ($self->indent($depth))),
         $self->next->to_javascript($depth),
     );
