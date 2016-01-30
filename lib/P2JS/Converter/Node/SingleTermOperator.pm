@@ -16,13 +16,21 @@ sub to_js_ast {
     if ($token->data eq '++' ||
         $token->data eq '--') {
         return P2JS::Node::PostSingleTermOperator->new(
-            token => $self->token,
+            token => $token,
+            expr  => $self->expr->to_js_ast($context),
+            next  => $self->next->to_js_ast($context),
+        );
+    } elsif ($token->name eq 'Add') {
+        # Add do nothing.
+        $token->{data} = '';
+        return P2JS::Node::PreSingleTermOperator->new(
+            token => $token,
             expr  => $self->expr->to_js_ast($context),
             next  => $self->next->to_js_ast($context),
         );
     } else {
         return P2JS::Node::PreSingleTermOperator->new(
-            token => $self->token,
+            token => $token,
             expr  => $self->expr->to_js_ast($context),
             next  => $self->next->to_js_ast($context),
         );
