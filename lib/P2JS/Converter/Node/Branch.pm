@@ -19,7 +19,9 @@ sub to_js_ast {
     my $left  = $self->left;
     my $right = $self->right;
 
-    if ($name eq 'Comma') {
+    if ($name eq 'Add') {
+        $token->{data} = " + ";
+    } elsif ($name eq 'Comma') {
         $token->{data} = ", ";
     } elsif ($name eq 'AlphabetOr') {
         $token->{data} = " || ";
