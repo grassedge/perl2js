@@ -23,7 +23,7 @@ sub to_javascript {
          )
         ),
         $self->indent($depth),
-        "})()\n",
+        "})()",
         ($self->next->is_nop ? () : (";\n" . $self->indent($depth))),
         $self->next->to_javascript($depth),
     );
