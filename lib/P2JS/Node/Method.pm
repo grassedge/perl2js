@@ -2,7 +2,7 @@ package P2JS::Node::Method;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node);
+use parent qw(P2JS::Node::Block);
 
 use P2JS::Node::Nop;
 
@@ -15,19 +15,16 @@ sub to_javascript {
     my ($self, $depth) = @_;
     return (
         $self->token->data . "() {\n",
-        ($self->body->is_nop ?
-         () :
+        (scalar(@{$self->sentences}) ?
          ($self->indent($depth + 1),
           "if (this !== undefined) { Array.prototype.unshift.call(arguments, this) }\n",
           $self->indent($depth + 1),
-          $self->body->to_javascript($depth + 1),
+          (join "\n", map { join '', $_->to_javascript($depth) } @{$self->sentences}),
           "\n",
-         )
+         ) : ()
         ),
         $self->indent($depth),
-        "}",
-        ($self->next->is_nop ? () : ("\n" . $self->indent($depth))),
-        $self->next->to_javascript($depth),
+        "}"
     );
 }
 

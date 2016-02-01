@@ -27,18 +27,22 @@ sub to_js_ast {
     my $token = $self->token;
 
     my $is_code_ref = $token->name ne 'Function';
+    my $block;
     if ($is_code_ref) {
-        return P2JS::Node::FunctionExpression->new(
+        $block = P2JS::Node::FunctionExpression->new(
             token => $token,
-            body => $body->to_js_ast($context),
-            "next" => $next->to_js_ast($context)
-        );
+        )
     } else {
-        return P2JS::Node::Method->new(
+        $block = P2JS::Node::Method->new(
             token => $token,
-            body => $body->to_js_ast($context),
-            "next" => $next->to_js_ast($context)
-        );
+        )
+    }
+    $context->push_sentence($block);
+    if (!$next->is_nop) {
+        $context->push_sentence($next->to_js_ast($context));
+    }
+    if (!$body->is_nop) {
+        $body->to_js_ast($context->clone($block));
     }
 }
 

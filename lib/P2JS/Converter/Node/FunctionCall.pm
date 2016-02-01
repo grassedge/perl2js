@@ -15,17 +15,16 @@ sub args {
 sub to_js_ast {
     my ($self, $context) = @_;
     my $token = $self->token;
-    my $function_name = $token->data;
-    my $name = $token->name;
-    if ($name eq 'BuiltinFunc') {
-        $context->{runtime}{builtinfunc}{$name} = 1;
-    }
 
-    return P2JS::Node::FunctionCall->new(
+    my $node = P2JS::Node::FunctionCall->new(
         token => $token,
         args => [ map { $_->to_js_ast($context) } @{$self->args} ],
         "next" => $self->next->to_js_ast($context)
     );
+    $context->push_sentence($node);
+    if (!$self->next->is_nop) {
+        $context->push_sentence($self->next->to_js_ast($context));
+    }
 }
 
 1;
