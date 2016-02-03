@@ -1,5 +1,5 @@
 {
-   "abstract" : "It's new $module",
+   "abstract" : "A module that transpile Perl code to JavaScript as readable as possible.",
    "author" : [
       "hatz48 <hatz48@hatena.ne.jp>"
    ],
@@ -67,6 +67,6 @@
          "web" : "https://github.com/hatz48/perl2js"
       }
    },
-   "version" : "0.01",
+   "version" : "0.02",
    "x_authority" : "cpan:HATZ"
 }
