@@ -1,19 +1,19 @@
-package P2JS::Converter::Node::List;
+package App::perl2js::Converter::Node::List;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'App::perl2js::Converter::Node';
 
-use P2JS::Converter::Node::Nop;
-use P2JS::Node::List;
+use App::perl2js::Converter::Node::Nop;
+use App::perl2js::Node::List;
 
 sub data_node {
     my ($self) = @_;
-    return $self->{data} // P2JS::Converter::Node::Nop->new;
+    return $self->{data} // App::perl2js::Converter::Node::Nop->new;
 }
 
 sub to_js_ast {
     my ($self, $context) = @_;
-    return P2JS::Node::List->new(
+    return App::perl2js::Node::List->new(
         token => $self->token,
         data  => $self->data_node->to_js_ast($context),
     );

@@ -1,9 +1,9 @@
-package P2JS::Converter::Node::FunctionCall;
+package App::perl2js::Converter::Node::FunctionCall;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'App::perl2js::Converter::Node';
 
-use P2JS::Node::FunctionCall;
+use App::perl2js::Node::FunctionCall;
 
 sub args {
     my ($self) = @_;
@@ -16,7 +16,7 @@ sub to_js_ast {
 
     my $token = $self->token;
 
-    return P2JS::Node::FunctionCall->new(
+    return App::perl2js::Node::FunctionCall->new(
         token => $token,
         args => [ map { $_->to_js_ast($context) } @{$self->args} ],
     );

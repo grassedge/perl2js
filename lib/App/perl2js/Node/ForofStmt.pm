@@ -1,19 +1,19 @@
-package P2JS::Node::ForofStmt;
+package App::perl2js::Node::ForofStmt;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node::BlockStmt);
+use parent qw(App::perl2js::Node::BlockStmt);
 
-use P2JS::Node::Nop;
+use App::perl2js::Node::Nop;
 
 sub cond {
     my ($self) = @_;
-    return $self->{cond} // P2JS::Node::Nop->new;
+    return $self->{cond} // App::perl2js::Node::Nop->new;
 }
 
 sub itr {
     my ($self) = @_;
-    return $self->{itr} // P2JS::Node::Nop->new;
+    return $self->{itr} // App::perl2js::Node::Nop->new;
 }
 
 sub to_javascript {

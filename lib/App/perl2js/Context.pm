@@ -1,4 +1,4 @@
-package P2JS::Context;
+package App::perl2js::Context;
 
 sub new {
     my ($class, %args) = @_;

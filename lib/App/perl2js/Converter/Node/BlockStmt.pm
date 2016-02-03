@@ -1,9 +1,9 @@
-package P2JS::Converter::Node::BlockStmt;
+package App::perl2js::Converter::Node::BlockStmt;
 
 use strict;
 use warnings;
 
-use parent 'P2JS::Converter::Node';
+use parent 'App::perl2js::Converter::Node';
 
 sub new {
     my ($class, %args) = @_;

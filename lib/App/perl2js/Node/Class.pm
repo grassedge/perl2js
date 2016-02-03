@@ -1,10 +1,10 @@
-package P2JS::Node::Class;
+package App::perl2js::Node::Class;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node::Block);
+use parent qw(App::perl2js::Node::Block);
 
-use P2JS::Node::Nop;
+use App::perl2js::Node::Nop;
 
 sub to_javascript {
     my ($self, $depth) = @_;
@@ -19,12 +19,12 @@ sub to_javascript {
             join('', $_->to_javascript($depth + 2)),
             ",\n",
          } grep {
-             $_->isa('P2JS::Node::Method')
+             $_->isa('App::perl2js::Node::Method')
          } @{$self->statements}),
         $self->indent($depth + 1), "}\n",
         $self->sentences_to_javascript($depth + 1, [ grep {
-             !$_->isa('P2JS::Node::Nop') &&
-             !$_->isa('P2JS::Node::Method')
+             !$_->isa('App::perl2js::Node::Nop') &&
+             !$_->isa('App::perl2js::Node::Method')
          } @{$self->statements} ]),
         $self->indent($depth + 1),
         "return ", $self->token->data, ";\n",

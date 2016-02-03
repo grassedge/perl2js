@@ -1,9 +1,9 @@
-package P2JS::Node;
+package App::perl2js::Node;
 
 use strict;
 use warnings;
 
-use P2JS::Node::Nop;
+use App::perl2js::Node::Nop;
 
 sub new {
     my ($class, %args) = @_;
@@ -17,12 +17,12 @@ sub token {
 
 sub next {
     my ($self) = @_;
-    return $self->{next} // P2JS::Node::Nop->new;
+    return $self->{next} // App::perl2js::Node::Nop->new;
 }
 
 sub is_nop {
     my ($self) = @_;
-    return $self->isa("P2JS::Node::Nop");
+    return $self->isa("App::perl2js::Node::Nop");
 }
 
 sub indent {

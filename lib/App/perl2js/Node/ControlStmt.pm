@@ -1,10 +1,10 @@
-package P2JS::Node::ControlStmt;
+package App::perl2js::Node::ControlStmt;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node);
+use parent qw(App::perl2js::Node);
 
-use P2JS::Node::Nop;
+use App::perl2js::Node::Nop;
 
 sub to_javascript {
     my ($self, $depth) = @_;

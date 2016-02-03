@@ -1,17 +1,17 @@
-package P2JS::Converter::Node::ArrayRef;
+package App::perl2js::Converter::Node::ArrayRef;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'App::perl2js::Converter::Node';
 
-use P2JS::Converter::Node::Nop;
+use App::perl2js::Converter::Node::Nop;
 
-use P2JS::Node::ArrayLiteral;
+use App::perl2js::Node::ArrayLiteral;
 
-sub data_node { shift->{data} // P2JS::Converter::Node::Nop->new; }
+sub data_node { shift->{data} // App::perl2js::Converter::Node::Nop->new; }
 
 sub to_js_ast {
     my ($self, $context) = @_;
-    return P2JS::Node::ArrayLiteral->new(
+    return App::perl2js::Node::ArrayLiteral->new(
         token => $self->token,
         data  => $self->data_node->to_js_ast($context),
     );
@@ -25,12 +25,12 @@ __END__
 
 =head1 NAME
 
-P2JS::Converter::Node::ArrayRef
+App::perl2js::Converter::Node::ArrayRef
 
 =head1 INHERITANCE
 
-    P2JS::Converter::Node::ArrayRef
-    isa P2JS::Converter::Node
+    App::perl2js::Converter::Node::ArrayRef
+    isa App::perl2js::Converter::Node
 
 =head1 DESCRIPTION
 
@@ -66,7 +66,7 @@ e.g.) $array_ref->[0]; ...
 
 =head1 SEE ALSO
 
-[P2JS::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
+[App::perl2js::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
 
 =head1 AUTHOR
 

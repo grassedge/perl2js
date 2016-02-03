@@ -1,9 +1,9 @@
-package P2JS::Converter::Node::ControlStmt;
+package App::perl2js::Converter::Node::ControlStmt;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'App::perl2js::Converter::Node';
 
-use P2JS::Node::ControlStmt;
+use App::perl2js::Node::ControlStmt;
 
 sub to_js_ast {
     my ($self, $context) = @_;
@@ -15,7 +15,7 @@ sub to_js_ast {
         $token->{name} = 'Break';
         $token->{data} = 'break';
     }
-    return P2JS::Node::ControlStmt->new(
+    return App::perl2js::Node::ControlStmt->new(
         token => $self->token,
     );
 }

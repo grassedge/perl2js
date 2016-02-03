@@ -1,11 +1,11 @@
-package P2JS::Converter::Node;
+package App::perl2js::Converter::Node;
 
 use strict;
 use warnings;
 use parent qw(Compiler::Parser::Node);
 
-use P2JS::Converter::Node::ArrayRef;
-use P2JS::Node::Nop;
+use App::perl2js::Converter::Node::ArrayRef;
+use App::perl2js::Node::Nop;
 use Data::Dumper;
 
 sub new {
@@ -15,13 +15,13 @@ sub new {
 
 sub is_nop {
     my ($self) = @_;
-    return $self->isa("P2JS::Converter::Node::Nop");
+    return $self->isa("App::perl2js::Converter::Node::Nop");
 }
 
 sub to_js_ast {
     my ($self) = @_;
     warn "\033[32m not implemented: " . ref ($self) . " \033[0m";
-    return P2JS::Node::Nop->new;
+    return App::perl2js::Node::Nop->new;
 }
 
 sub search {
@@ -69,7 +69,7 @@ sub remove_node {
 
 sub shift_comma_branch {
     my ($branch) = @_; # Node::Branch / Comma
-    if (ref($branch) ne 'P2JS::Converter::Node::Branch') {
+    if (ref($branch) ne 'App::perl2js::Converter::Node::Branch') {
         return {
             new_root => $branch,
             most_left => undef
@@ -78,7 +78,7 @@ sub shift_comma_branch {
     my $most_left;
     my $shift; $shift = sub {
         my ($branch) = @_;
-        if (ref($branch->left) eq 'P2JS::Converter::Node::Branch') {
+        if (ref($branch->left) eq 'App::perl2js::Converter::Node::Branch') {
             my $new_left = $shift->($branch->left);
             if ($new_left) {
                 $branch->{left} = $new_left;
@@ -96,12 +96,12 @@ sub shift_comma_branch {
     };
 }
 
-# P2JS::Converter::Node::CodeDereference
-# P2JS::Converter::Node::Handle
-# P2JS::Converter::Node::HandleRead
-# P2JS::Converter::Node::Label
-# P2JS::Converter::Node::RegReplace
-# P2JS::Converter::Node::RegPrefix
-# P2JS::Converter::Node::Regexp
+# App::perl2js::Converter::Node::CodeDereference
+# App::perl2js::Converter::Node::Handle
+# App::perl2js::Converter::Node::HandleRead
+# App::perl2js::Converter::Node::Label
+# App::perl2js::Converter::Node::RegReplace
+# App::perl2js::Converter::Node::RegPrefix
+# App::perl2js::Converter::Node::Regexp
 
 1;

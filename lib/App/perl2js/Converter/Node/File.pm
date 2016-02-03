@@ -1,23 +1,23 @@
-package P2JS::Converter::Node::File;
+package App::perl2js::Converter::Node::File;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node::BlockStmt';
+use parent 'App::perl2js::Converter::Node::BlockStmt';
 
-use P2JS::Node::File;
+use App::perl2js::Node::File;
 
 sub to_js_ast {
     my ($self, $context) = @_;
-    my $file = P2JS::Node::File->new;
+    my $file = App::perl2js::Node::File->new;
     $context->root($file);
     my $statements = $self->statements;
     my $line = 0;
     while ($line < scalar(@$statements)) {
         my $statement = $statements->[$line];
-        if ($statement->isa('P2JS::Converter::Node::Package')) {
+        if ($statement->isa('App::perl2js::Converter::Node::Package')) {
             my $i = $line + 1;
             while (
                 defined $statements->[$i] &&
-                !$statements->[$i]->isa('P2JS::Converter::Node::Package')
+                !$statements->[$i]->isa('App::perl2js::Converter::Node::Package')
             ) {
                 $statement->push_statement($statements->[$i]);
                 $i++;

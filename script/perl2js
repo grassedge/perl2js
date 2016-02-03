@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use P2JS::Converter;
+use App::perl2js::Converter;
 
 my $filename = $ARGV[0];
 my $script;
@@ -14,4 +14,4 @@ if ($filename) {
     $script = join('', <STDIN>);
 }
 
-print P2JS::Converter->new->convert($script);
+print App::perl2js::Converter->new->convert($script);

@@ -1,13 +1,13 @@
-package P2JS::Converter::Node::Package;
+package App::perl2js::Converter::Node::Package;
 
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node::BlockStmt';
+use parent 'App::perl2js::Converter::Node::BlockStmt';
 
-use P2JS::Converter::Node::Nop;
+use App::perl2js::Converter::Node::Nop;
 
-use P2JS::Node::Class;
-use P2JS::Node::Nop;
+use App::perl2js::Node::Class;
+use App::perl2js::Node::Nop;
 
 sub to_js_ast {
     my ($self, $context) = @_;
@@ -19,7 +19,7 @@ sub to_js_ast {
     $class_name =~ s/.+:://g;
     $token->{data} = $class_name;
 
-    my $class = P2JS::Node::Class->new(
+    my $class = App::perl2js::Node::Class->new(
         token => $self->token,
     );
     $class->statements([ map {
@@ -37,12 +37,12 @@ __END__
 
 =head1 NAME
 
-P2JS::Converter::Node::Package
+App::perl2js::Converter::Node::Package
 
 =head1 INHERITANCE
 
-    P2JS::Converter::Node::Package
-    isa P2JS::Converter::Node
+    App::perl2js::Converter::Node::Package
+    isa App::perl2js::Converter::Node
 
 =head1 DESCRIPTION
 
@@ -68,7 +68,7 @@ e.g.) package Person; ...
 
 =head1 SEE ALSO
 
-[P2JS::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
+[App::perl2js::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
 
 =head1 AUTHOR
 

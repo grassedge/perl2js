@@ -1,9 +1,9 @@
-package P2JS::Converter::Node::Leaf;
+package App::perl2js::Converter::Node::Leaf;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'App::perl2js::Converter::Node';
 
-use P2JS::Node::Leaf;
+use App::perl2js::Node::Leaf;
 
 sub to_js_ast {
     my ($self, $context) = @_;
@@ -64,6 +64,12 @@ sub to_js_ast {
     } elsif ($name eq 'ShortArrayDereference') {
         my $trimmed = substr($data, 2) . "_a";
         $token->{data} = "..." . $trimmed;
+    # } elsif ($name eq 'ArrayDereference') {
+    #     use Data::Dumper;
+    #     delete $self->{parent};
+    #     warn Dumper $self;
+    #     my $trimmed = "\033[32m" . substr($data, 2) . "\033[0m";
+    #     $token->{data} = "..." . $trimmed;
     } elsif ($name eq 'ShortHashDereference') {
         my $trimmed = substr($data, 2) . "_h";
         if ($trimmed eq 'ENV') {
@@ -90,7 +96,7 @@ sub to_js_ast {
         $token->{data} = $self->cprint(ref($self) . ", " . $name . ": " . $data);
     }
 
-    return P2JS::Node::Leaf->new(
+    return App::perl2js::Node::Leaf->new(
         token => $self->token,
     );
 }

@@ -1,9 +1,9 @@
-package P2JS::Converter::Node::Dereference;
+package App::perl2js::Converter::Node::Dereference;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'App::perl2js::Converter::Node';
 
-use P2JS::Converter::Node::Nop;
+use App::perl2js::Converter::Node::Nop;
 
 sub expr { shift->{expr} }
 
@@ -23,12 +23,12 @@ __END__
 
 =head1 NAME
 
-P2JS::Converter::Node::Dereference
+App::perl2js::Converter::Node::Dereference
 
 =head1 INHERITANCE
 
-    P2JS::Converter::Node::Dereference
-    isa P2JS::Converter::Node
+    App::perl2js::Converter::Node::Dereference
+    isa App::perl2js::Converter::Node
 
 =head1 DESCRIPTION
 
@@ -64,7 +64,7 @@ e.g.) @$array_ref; ...
 
 =head1 SEE ALSO
 
-[P2JS::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
+[App::perl2js::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
 
 =head1 AUTHOR
 

@@ -1,20 +1,20 @@
-package P2JS::Converter::Node::Array;
+package App::perl2js::Converter::Node::Array;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'App::perl2js::Converter::Node';
 
 use Compiler::Lexer::Token;
-use P2JS::Converter::Node::Nop;
-use P2JS::Converter::Node::Leaf;
+use App::perl2js::Converter::Node::Nop;
+use App::perl2js::Converter::Node::Leaf;
 
-use P2JS::Node::PropertyAccessor;
+use App::perl2js::Node::PropertyAccessor;
 
-sub idx { shift->{idx} // P2JS::Converter::Node::Nop->new; }
+sub idx { shift->{idx} // App::perl2js::Converter::Node::Nop->new; }
 
 sub to_js_ast {
     my ($self, $context) = @_;
     my $key;
-    if (ref($self->idx) eq 'P2JS::Converter::Node::ArrayRef') {
+    if (ref($self->idx) eq 'App::perl2js::Converter::Node::ArrayRef') {
         $key = $self->idx->data_node;
     } else {
         $key = $self->idx;
@@ -25,9 +25,9 @@ sub to_js_ast {
     } else {
         $data = $self->data;
     }
-    return P2JS::Node::PropertyAccessor->new(
+    return App::perl2js::Node::PropertyAccessor->new(
         token => $self->token,
-        data  => P2JS::Converter::Node::Leaf->new(
+        data  => App::perl2js::Converter::Node::Leaf->new(
             token => bless({
                 data => $data,
                 name => 'Var',
@@ -45,12 +45,12 @@ __END__
 
 =head1 NAME
 
-P2JS::Converter::Node::Array
+App::perl2js::Converter::Node::Array
 
 =head1 INHERITANCE
 
-    P2JS::Converter::Node::Array
-    isa P2JS::Converter::Node
+    App::perl2js::Converter::Node::Array
+    isa App::perl2js::Converter::Node
 
 =head1 DESCRIPTION
 
@@ -86,7 +86,7 @@ e.g.) $array[0]; ...
 
 =head1 SEE ALSO
 
-[P2JS::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
+[App::perl2js::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
 
 =head1 AUTHOR
 

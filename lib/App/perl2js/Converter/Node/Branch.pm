@@ -1,16 +1,16 @@
-package P2JS::Converter::Node::Branch;
+package App::perl2js::Converter::Node::Branch;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'App::perl2js::Converter::Node';
 
-use P2JS::Converter::Node::FunctionCall;
-use P2JS::Converter::Node::Nop;
+use App::perl2js::Converter::Node::FunctionCall;
+use App::perl2js::Converter::Node::Nop;
 
-use P2JS::Node::Branch;
-use P2JS::Node::PropertyAccessor;
+use App::perl2js::Node::Branch;
+use App::perl2js::Node::PropertyAccessor;
 
-sub left  { shift->{left}  // P2JS::Converter::Node::Nop->new; }
-sub right { shift->{right} // P2JS::Converter::Node::Nop->new; }
+sub left  { shift->{left}  // App::perl2js::Converter::Node::Nop->new; }
+sub right { shift->{right} // App::perl2js::Converter::Node::Nop->new; }
 
 sub to_js_ast {
     my ($self, $context) = @_;
@@ -36,40 +36,40 @@ sub to_js_ast {
         $token->{data} = ' : ';
     } elsif ($name eq 'Assign') {
         if ($left->token->name eq 'LocalHashVar' &&
-            ref($right) eq 'P2JS::Converter::Node::List'
+            ref($right) eq 'App::perl2js::Converter::Node::List'
             ) {
             my $arrayref = bless +{
                 data => $right,
                 indent => $right->indent
-            }, 'P2JS::Converter::Node::HashRef';
+            }, 'App::perl2js::Converter::Node::HashRef';
             $right->{parent} = $arrayref;
             $right = $arrayref;
         }
         if ($left->token->name eq 'LocalArrayVar' &&
-            ref($right) eq 'P2JS::Converter::Node::List'
+            ref($right) eq 'App::perl2js::Converter::Node::List'
             ) {
             my $arrayref = bless +{
                 data => $right,
                 indent => $right->indent
-            }, 'P2JS::Converter::Node::ArrayRef';
+            }, 'App::perl2js::Converter::Node::ArrayRef';
             $right->{parent} = $arrayref;
             $right = $arrayref;
         }
-        if (ref($left) eq 'P2JS::Converter::Node::List') {
+        if (ref($left) eq 'App::perl2js::Converter::Node::List') {
             my $arrayref = bless +{
                 data => $left,
-            }, 'P2JS::Converter::Node::ArrayRef';
+            }, 'App::perl2js::Converter::Node::ArrayRef';
             $left->{parent} = $arrayref;
             $left = $arrayref;
         }
         $token->{data} = " = ";
     } elsif ($name eq 'DefaultOperator') {
-        return P2JS::Converter::Node::FunctionCall->new(
+        return App::perl2js::Converter::Node::FunctionCall->new(
             token => bless({
                 data => 'default_or',
                 name => 'RuntimeHelper'
             }, 'Compiler::Lexer::Token'),
-            args => [ P2JS::Converter::Node::Branch->new(
+            args => [ App::perl2js::Converter::Node::Branch->new(
                 token => bless({
                     data => ',',
                     name => 'Comma',
@@ -93,12 +93,12 @@ sub to_js_ast {
     } elsif ($name eq 'Or') {
         $token->{data} = " || ";
     } elsif ($name eq 'OrEqual') {
-        return P2JS::Converter::Node::Branch->new(
+        return App::perl2js::Converter::Node::Branch->new(
             token => bless({
                 name => 'Assign'
             }, 'Compiler::Lexer::Token'),
             left => $left,
-            right => P2JS::Converter::Node::Branch->new(
+            right => App::perl2js::Converter::Node::Branch->new(
                 token => bless({
                     name => 'Or'
                 }, 'Compiler::Lexer::Token'),
@@ -107,16 +107,16 @@ sub to_js_ast {
             ),
         )->to_js_ast($context);
     } elsif ($name eq 'Pointer') {
-        # if (ref($right) eq 'P2JS::Converter::Node::FunctionCall' &&
+        # if (ref($right) eq 'App::perl2js::Converter::Node::FunctionCall' &&
         #     $right->token->data eq 'new') {
         #     $token->{data} = 'new';
         # } els
-        if ((ref($right) eq 'P2JS::Converter::Node::ArrayRef') ||
-            (ref($right) eq 'P2JS::Converter::Node::HashRef')) {
+        if ((ref($right) eq 'App::perl2js::Converter::Node::ArrayRef') ||
+            (ref($right) eq 'App::perl2js::Converter::Node::HashRef')) {
 
             my $data_node = $right->data_node;
             my $key = $right->data_node;
-            return P2JS::Node::PropertyAccessor->new(
+            return App::perl2js::Node::PropertyAccessor->new(
                 # token => $self->token,
                 data  => $left->to_js_ast($context),
                 key   => $key->to_js_ast($context),
@@ -125,12 +125,12 @@ sub to_js_ast {
             $token->{data} = ".";
         }
     } elsif ($name eq 'Slice') {
-        return P2JS::Converter::Node::FunctionCall->new(
+        return App::perl2js::Converter::Node::FunctionCall->new(
             token => bless({
                 data => 'range',
                 name => 'RuntimeHelper'
             }, 'Compiler::Lexer::Token'),
-            args => [ P2JS::Converter::Node::Branch->new(
+            args => [ App::perl2js::Converter::Node::Branch->new(
                 token => bless({
                     data => ',',
                     name => 'Comma',
@@ -148,12 +148,12 @@ sub to_js_ast {
     } elsif ($name eq 'StringAddEqual') {
         $token->{data} = " += ";
     } elsif ($name eq 'StringMul') {
-        return P2JS::Converter::Node::FunctionCall->new(
+        return App::perl2js::Converter::Node::FunctionCall->new(
             token => bless({
                 data => 'string_multi',
                 name => 'RuntimeHelper'
             }, 'Compiler::Lexer::Token'),
-            args => [ P2JS::Converter::Node::Branch->new(
+            args => [ App::perl2js::Converter::Node::Branch->new(
                 token => bless({
                     data => ',',
                     name => 'Comma',
@@ -166,7 +166,7 @@ sub to_js_ast {
         $token->{data} = $self->cprint(ref($self) . ", " . $name . ": " . $data);
     }
 
-    return P2JS::Node::Branch->new(
+    return App::perl2js::Node::Branch->new(
         token => $token,
         left  => $left->to_js_ast($context),
         right => $right->to_js_ast($context),
@@ -181,12 +181,12 @@ __END__
 
 =head1 NAME
 
-P2JS::Converter::Node::Branch
+App::perl2js::Converter::Node::Branch
 
 =head1 INHERITANCE
 
-    P2JS::Converter::Node::Branch
-    isa P2JS::Converter::Node
+    App::perl2js::Converter::Node::Branch
+    isa App::perl2js::Converter::Node
 
 =head1 DESCRIPTION
 
@@ -228,7 +228,7 @@ e.g.) 1 + 2 + 3; ...
 
 =head1 SEE ALSO
 
-[P2JS::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
+[App::perl2js::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
 
 =head1 AUTHOR
 

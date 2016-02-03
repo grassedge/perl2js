@@ -1,4 +1,4 @@
-package P2JS::Converter;
+package App::perl2js::Converter;
 
 use strict;
 use warnings;
@@ -7,9 +7,9 @@ use Compiler::Parser;
 
 use Module::Load;
 
-use P2JS::Context;
-use P2JS::Converter::Node::File;
-use P2JS::Node::File;
+use App::perl2js::Context;
+use App::perl2js::Converter::Node::File;
+use App::perl2js::Node::File;
 
 # http://perldoc.perl.org/perlfunc.html
 my $runtime = {
@@ -87,13 +87,13 @@ sub convert {
         my ($node) = @_;
         delete $node->{parent};
         my $ref = ref($node);
-        $ref =~ s/Compiler::Parser/P2JS::Converter/;
+        $ref =~ s/Compiler::Parser/App::perl2js::Converter/;
         load $ref;
         bless $node, $ref;
     });
 
-    my $context = P2JS::Context->new;
-    my $root = P2JS::Converter::Node::File->new(body => $ast->root);
+    my $context = App::perl2js::Context->new;
+    my $root = App::perl2js::Converter::Node::File->new(body => $ast->root);
     reconstruct($root);
     $root->to_js_ast($context);
     my $file = $context->root;

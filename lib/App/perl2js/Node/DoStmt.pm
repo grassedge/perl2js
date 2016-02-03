@@ -1,10 +1,10 @@
-package P2JS::Node::DoStmt;
+package App::perl2js::Node::DoStmt;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node::BlockStmt);
+use parent qw(App::perl2js::Node::BlockStmt);
 
-use P2JS::Node::Nop;
+use App::perl2js::Node::Nop;
 
 sub to_javascript {
     my ($self, $depth) = @_;

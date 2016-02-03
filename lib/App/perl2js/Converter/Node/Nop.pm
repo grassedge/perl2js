@@ -1,13 +1,13 @@
-package P2JS::Converter::Node::Nop;
+package App::perl2js::Converter::Node::Nop;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Converter::Node);
+use parent qw(App::perl2js::Converter::Node);
 
-use P2JS::Node::Nop;
+use App::perl2js::Node::Nop;
 
 sub to_js_ast {
-    return P2JS::Node::Nop->new;
+    return App::perl2js::Node::Nop->new;
 }
 
 1;

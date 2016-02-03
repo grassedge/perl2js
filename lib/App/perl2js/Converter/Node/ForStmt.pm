@@ -1,19 +1,19 @@
-package P2JS::Converter::Node::ForStmt;
+package App::perl2js::Converter::Node::ForStmt;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node::BlockStmt';
+use parent 'App::perl2js::Converter::Node::BlockStmt';
 
-use P2JS::Converter::Node::Nop;
+use App::perl2js::Converter::Node::Nop;
 
-use P2JS::Node::ForStmt;
+use App::perl2js::Node::ForStmt;
 
-sub init { shift->{init} // P2JS::Converter::Node::Nop->new; }
-sub cond { shift->{cond} // P2JS::Converter::Node::Nop->new; }
-sub progress { shift->{progress} // P2JS::Converter::Node::Nop->new; }
+sub init { shift->{init} // App::perl2js::Converter::Node::Nop->new; }
+sub cond { shift->{cond} // App::perl2js::Converter::Node::Nop->new; }
+sub progress { shift->{progress} // App::perl2js::Converter::Node::Nop->new; }
 
 sub to_js_ast {
     my ($self, $context) = @_;
-    return P2JS::Node::ForStmt->new(
+    return App::perl2js::Node::ForStmt->new(
         token => $self->token,
         init  => $self->init->to_js_ast($context),
         cond  => $self->cond->to_js_ast($context),
@@ -30,12 +30,12 @@ __END__
 
 =head1 NAME
 
-P2JS::Converter::Node::ForStmt
+App::perl2js::Converter::Node::ForStmt
 
 =head1 INHERITANCE
 
-    P2JS::Converter::Node::ForStmt
-    isa P2JS::Converter::Node
+    App::perl2js::Converter::Node::ForStmt
+    isa App::perl2js::Converter::Node
 
 =head1 DESCRIPTION
 
@@ -80,7 +80,7 @@ e.g.) for (my $i = 0; $i < 10; $i++) { $a++ }
 
 =head1 SEE ALSO
 
-[P2JS::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
+[App::perl2js::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
 
 =head1 AUTHOR
 

@@ -1,14 +1,14 @@
-package P2JS::Node::ArrayLiteral;
+package App::perl2js::Node::ArrayLiteral;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node);
+use parent qw(App::perl2js::Node);
 
-use P2JS::Node::Nop;
+use App::perl2js::Node::Nop;
 
 sub data_node {
     my ($self) = @_;
-    return $self->{data} // P2JS::Node::Nop->new;
+    return $self->{data} // App::perl2js::Node::Nop->new;
 }
 
 sub to_javascript {

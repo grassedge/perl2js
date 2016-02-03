@@ -1,18 +1,18 @@
-package P2JS::Converter::Node::ForeachStmt;
+package App::perl2js::Converter::Node::ForeachStmt;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node::BlockStmt';
+use parent 'App::perl2js::Converter::Node::BlockStmt';
 
-use P2JS::Converter::Node::Nop;
+use App::perl2js::Converter::Node::Nop;
 
-use P2JS::Node::ForofStmt;
+use App::perl2js::Node::ForofStmt;
 
-sub cond { shift->{cond} // P2JS::Converter::Node::Nop->new; }
-sub itr { shift->{itr} // P2JS::Converter::Node::Nop->new; }
+sub cond { shift->{cond} // App::perl2js::Converter::Node::Nop->new; }
+sub itr { shift->{itr} // App::perl2js::Converter::Node::Nop->new; }
 
 sub to_js_ast {
     my ($self, $context) = @_;
-    return P2JS::Node::ForofStmt->new(
+    return App::perl2js::Node::ForofStmt->new(
         token => $self->token,
         cond  => $self->cond->to_js_ast($context),
         itr   => $self->itr->to_js_ast($context),
@@ -28,12 +28,12 @@ __END__
 
 =head1 NAME
 
-P2JS::Converter::Node::ForeachStmt
+App::perl2js::Converter::Node::ForeachStmt
 
 =head1 INHERITANCE
 
-    P2JS::Converter::Node::ForeachStmt
-    isa P2JS::Converter::Node
+    App::perl2js::Converter::Node::ForeachStmt
+    isa App::perl2js::Converter::Node
 
 =head1 DESCRIPTION
 
@@ -77,7 +77,7 @@ e.g.) foreach my $itr (@array) { $itr++ }
 
 =head1 SEE ALSO
 
-[P2JS::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
+[App::perl2js::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
 
 =head1 AUTHOR
 

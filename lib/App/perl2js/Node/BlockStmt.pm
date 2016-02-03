@@ -1,9 +1,9 @@
-package P2JS::Node::BlockStmt;
+package App::perl2js::Node::BlockStmt;
 
 use strict;
 use warnings;
 
-use parent qw(P2JS::Node);
+use parent qw(App::perl2js::Node);
 
 sub new {
     my ($class, %args) = @_;
@@ -31,7 +31,7 @@ sub sentences_to_javascript {
         (join "", map {
             $self->indent($depth),
             join('', $_->to_javascript($depth)),
-            ($_->isa('P2JS::Node::BlockStmt') ? "\n" : ";\n"),
+            ($_->isa('App::perl2js::Node::BlockStmt') ? "\n" : ";\n"),
          } @{$sentences || $self->statements}),
     );
 }

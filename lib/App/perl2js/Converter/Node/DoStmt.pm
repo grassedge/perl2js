@@ -1,15 +1,15 @@
-package P2JS::Converter::Node::DoStmt;
+package App::perl2js::Converter::Node::DoStmt;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node::BlockStmt';
+use parent 'App::perl2js::Converter::Node::BlockStmt';
 
-use P2JS::Converter::Node::Nop;
+use App::perl2js::Converter::Node::Nop;
 
-use P2JS::Node::DoStmt;
+use App::perl2js::Node::DoStmt;
 
 sub to_js_ast {
     my ($self, $context) = @_;
-    return P2JS::Node::DoStmt->new(
+    return App::perl2js::Node::DoStmt->new(
         token => $self->token,
         statements => [ map { $_->to_js_ast($context) } @{$self->statements || []} ], # TODO why statements is undef ?
     );
@@ -23,12 +23,12 @@ __END__
 
 =head1 NAME
 
-P2JS::Converter::Node::DoStmt
+App::perl2js::Converter::Node::DoStmt
 
 =head1 INHERITANCE
 
-    P2JS::Converter::Node::DoStmt
-    isa P2JS::Converter::Node
+    App::perl2js::Converter::Node::DoStmt
+    isa App::perl2js::Converter::Node
 
 =head1 DESCRIPTION
 
@@ -71,7 +71,7 @@ e.g.) do { $a++; } ...
 
 =head1 SEE ALSO
 
-[P2JS::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
+[App::perl2js::Converter::Node](http://search.cpan.org/perldoc?Compiler::Parser::Node)
 
 =head1 AUTHOR
 

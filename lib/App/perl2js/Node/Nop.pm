@@ -1,8 +1,8 @@
-package P2JS::Node::Nop;
+package App::perl2js::Node::Nop;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node);
+use parent qw(App::perl2js::Node);
 
 sub to_javascript {
     return '';

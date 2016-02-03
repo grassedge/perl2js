@@ -1,8 +1,8 @@
-package P2JS::Node::FunctionCall;
+package App::perl2js::Node::FunctionCall;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node);
+use parent qw(App::perl2js::Node);
 
 sub args {
     my ($self) = @_;

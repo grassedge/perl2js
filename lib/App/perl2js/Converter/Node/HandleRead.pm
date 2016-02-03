@@ -1,6 +1,6 @@
-package P2JS::Converter::Node::HandleRead;
+package App::perl2js::Converter::Node::HandleRead;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'App::perl2js::Converter::Node';
 
 1;

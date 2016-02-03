@@ -1,10 +1,10 @@
-package P2JS::Node::File;
+package App::perl2js::Node::File;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node::BlockStmt);
+use parent qw(App::perl2js::Node::BlockStmt);
 
-use P2JS::Node::Nop;
+use App::perl2js::Node::Nop;
 
 sub new {
     my ($class, %args) = @_;
@@ -28,11 +28,11 @@ sub to_javascript {
     return (
         (join '', map {
             join('', $_->to_javascript($depth)),
-            ($_->isa('P2JS::Node::BlockStmt') ? "\n" : ";\n"),
+            ($_->isa('App::perl2js::Node::BlockStmt') ? "\n" : ";\n"),
          } @{$self->imports}),
         (join "", map {
             join('', $_->to_javascript($depth)),
-            ($_->isa('P2JS::Node::BlockStmt') ? "\n" : ";\n"),
+            ($_->isa('App::perl2js::Node::BlockStmt') ? "\n" : ";\n"),
          } @{$self->statements}),
     );
 }

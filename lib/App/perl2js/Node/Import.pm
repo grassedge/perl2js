@@ -1,14 +1,14 @@
-package P2JS::Node::Import;
+package App::perl2js::Node::Import;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node);
+use parent qw(App::perl2js::Node);
 
-use P2JS::Node::Nop;
+use App::perl2js::Node::Nop;
 
 sub args {
     my ($self) = @_;
-    return $self->{args} // P2JS::Node::Nop->new;
+    return $self->{args} // App::perl2js::Node::Nop->new;
 }
 
 sub to_javascript {
