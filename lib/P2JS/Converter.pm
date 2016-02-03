@@ -8,6 +8,8 @@ use Compiler::Parser;
 use Module::Load;
 
 use P2JS::Context;
+use P2JS::Converter::Node::File;
+use P2JS::Node::File;
 
 # http://perldoc.perl.org/perlfunc.html
 my $runtime = {
@@ -91,16 +93,64 @@ sub convert {
     });
 
     my $context = P2JS::Context->new;
-    my $root = $ast->root;
-    my $ret = $root->to_js_ast($context);
+    my $root = P2JS::Converter::Node::File->new(body => $ast->root);
+    reconstruct($root);
+    $root->to_js_ast($context);
+    my $file = $context->root;
 
     return join(
         '',
         @runtime,
-        (map { $_->to_javascript(0) } @{$context->imports}),
-        "\n",
-        (map { $_->to_javascript(0) } @{$context->classes}),
+        $file->to_javascript(0),
     );
+}
+
+sub reconstruct {
+    my ($node) = @_;
+    # expression/statement
+    ## args
+    ## cond
+    ## expr
+    ## false_expr
+    ## from
+    ## idx
+    ## init
+    ## itr
+    ## key
+    ## left
+    ## name
+    ## option
+    ## progress
+    ## prototype
+    ## right
+    ## to
+    ## true_expr
+    ## false_stmt
+
+    # block
+    ## body
+    ## data
+    ## stmt
+    ## true_stmt
+    # for my $key ('body', 'data', 'stmt', 'true_stmt') {
+    for my $key ('body', 'stmt', 'true_stmt') {
+        if ($node->{$key}) {
+            my $statement = delete $node->{$key};
+            my $statements = [];
+            while ($statement) {
+                push @$statements, $statement;
+                $statement = delete $statement->{next};
+            }
+            $node->statements($statements);
+            for my $statement (@$statements) {
+                reconstruct($statement);
+            }
+        }
+    }
+    if ($node->{false_stmt}) {
+        my $statement = $node->{false_stmt};
+        reconstruct($statement);
+    }
 }
 
 1;

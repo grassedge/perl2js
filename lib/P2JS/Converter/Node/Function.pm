@@ -1,18 +1,13 @@
 package P2JS::Converter::Node::Function;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'P2JS::Converter::Node::BlockStmt';
 
 use P2JS::Converter::Node::Nop;
 
 use P2JS::Node::Function;
 use P2JS::Node::FunctionExpression;
 use P2JS::Node::Method;
-
-sub body {
-    my ($self) = @_;
-    return $self->{body} // P2JS::Converter::Node::Nop->new;
-}
 
 sub prototype {
     my ($self) = @_;
@@ -21,9 +16,9 @@ sub prototype {
 
 sub to_js_ast {
     my ($self, $context) = @_;
-    my $next = $self->next;
-    my $body = $self->body;
+    my $current_block = $context->current_block;
 
+    my $statements = $self->statements;
     my $token = $self->token;
 
     my $is_code_ref = $token->name ne 'Function';
@@ -31,19 +26,27 @@ sub to_js_ast {
     if ($is_code_ref) {
         $block = P2JS::Node::FunctionExpression->new(
             token => $token,
+            statements => [
+                map { $_->to_js_ast($context->clone($block)) } @$statements
+            ],
         )
-    } else {
+    } elsif ($current_block->isa('P2JS::Node::Class')) {
         $block = P2JS::Node::Method->new(
             token => $token,
+            statements => [
+                map { $_->to_js_ast($context->clone($block)) } @$statements
+            ],
+        )
+    } else {
+        $block = P2JS::Node::Function->new(
+            token => $token,
+            statements => [
+                map { $_->to_js_ast($context->clone($block)) } @$statements
+            ],
         )
     }
-    $context->push_sentence($block);
-    if (!$next->is_nop) {
-        $context->push_sentence($next->to_js_ast($context));
-    }
-    if (!$body->is_nop) {
-        $body->to_js_ast($context->clone($block));
-    }
+
+    return $block;
 }
 
 1;

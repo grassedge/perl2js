@@ -22,6 +22,8 @@ sub to_js_ast {
 
     if ($name eq 'Add') {
         $token->{data} = " + ";
+    } elsif ($name eq 'Mul') {
+        $token->{data} = " * ";
     } elsif ($name eq 'Comma') {
         $token->{data} = ", ";
     } elsif ($name eq 'AlphabetOr') {
@@ -75,7 +77,6 @@ sub to_js_ast {
                 left => $left,
                 right => $right,
             ) ],
-            next => $self->next,
         )->to_js_ast($context);
     } elsif ($name eq 'EqualEqual') {
         $token->{data} = " == ";
@@ -104,7 +105,6 @@ sub to_js_ast {
                 left => $left,
                 right => $right
             ),
-            next => $self->next,
         )->to_js_ast($context);
     } elsif ($name eq 'Pointer') {
         # if (ref($right) eq 'P2JS::Converter::Node::FunctionCall' &&
@@ -120,7 +120,6 @@ sub to_js_ast {
                 # token => $self->token,
                 data  => $left->to_js_ast($context),
                 key   => $key->to_js_ast($context),
-                next  => $self->next->to_js_ast($context),
             );
         } else {
             $token->{data} = ".";
@@ -139,7 +138,6 @@ sub to_js_ast {
                 left => $left,
                 right => $right,
             ) ],
-            next => $self->next,
         )->to_js_ast($context);
     } elsif ($name eq 'StringEqual') {
         $token->{data} = " === ";
@@ -163,7 +161,6 @@ sub to_js_ast {
                 left => $left,
                 right => $right,
             ) ],
-            next => $self->next,
         )->to_js_ast($context);
     } else {
         $token->{data} = $self->cprint(ref($self) . ", " . $name . ": " . $data);
@@ -173,7 +170,6 @@ sub to_js_ast {
         token => $token,
         left  => $left->to_js_ast($context),
         right => $right->to_js_ast($context),
-        next  => $self->next->to_js_ast($context),
     );
 }
 

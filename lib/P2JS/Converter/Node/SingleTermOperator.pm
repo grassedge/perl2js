@@ -15,10 +15,11 @@ sub to_js_ast {
     my $token = $self->token;
     if ($token->data eq '++' ||
         $token->data eq '--') {
+        # TODO. Compiler::Parser cannot distinguish pre/post.
+        #       temporary use PostSingleTermOperator...
         return P2JS::Node::PostSingleTermOperator->new(
             token => $token,
             expr  => $self->expr->to_js_ast($context),
-            next  => $self->next->to_js_ast($context),
         );
     } elsif ($token->name eq 'Add') {
         # Add do nothing.
@@ -26,13 +27,11 @@ sub to_js_ast {
         return P2JS::Node::PreSingleTermOperator->new(
             token => $token,
             expr  => $self->expr->to_js_ast($context),
-            next  => $self->next->to_js_ast($context),
         );
     } else {
         return P2JS::Node::PreSingleTermOperator->new(
             token => $token,
             expr  => $self->expr->to_js_ast($context),
-            next  => $self->next->to_js_ast($context),
         );
     }
 }

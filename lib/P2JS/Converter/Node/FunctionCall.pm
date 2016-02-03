@@ -3,8 +3,6 @@ use strict;
 use warnings;
 use parent 'P2JS::Converter::Node';
 
-use P2JS::Converter::Node::Nop;
-
 use P2JS::Node::FunctionCall;
 
 sub args {
@@ -14,17 +12,14 @@ sub args {
 
 sub to_js_ast {
     my ($self, $context) = @_;
+    my $current_block = $context->current_block;
+
     my $token = $self->token;
 
-    my $node = P2JS::Node::FunctionCall->new(
+    return P2JS::Node::FunctionCall->new(
         token => $token,
         args => [ map { $_->to_js_ast($context) } @{$self->args} ],
-        "next" => $self->next->to_js_ast($context)
     );
-    $context->push_sentence($node);
-    if (!$self->next->is_nop) {
-        $context->push_sentence($self->next->to_js_ast($context));
-    }
 }
 
 1;

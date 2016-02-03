@@ -18,7 +18,6 @@ sub to_js_ast {
         cond  => $self->cond->to_js_ast($context),
         true_expr  => $self->true_expr->to_js_ast($context),
         false_expr => $self->false_expr->to_js_ast($context),
-        next  => $self->next->to_js_ast($context),
     );
 }
 

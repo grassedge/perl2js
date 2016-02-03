@@ -2,25 +2,31 @@ package P2JS::Converter::Node::Package;
 
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'P2JS::Converter::Node::BlockStmt';
 
 use P2JS::Converter::Node::Nop;
-use P2JS::Node::Nop;
 
 use P2JS::Node::Class;
+use P2JS::Node::Nop;
 
 sub to_js_ast {
     my ($self, $context) = @_;
+    my $current_block = $context->current_block;
+    my $root = $context->root;
+
     my $token = $self->token;
     my $class_name = $token->data;
     $class_name =~ s/.+:://g;
     $token->{data} = $class_name;
+
     my $class = P2JS::Node::Class->new(
         token => $self->token,
     );
-    $context->push_class($class);
-    $class->{body} = $self->next->to_js_ast($context);
-    return P2JS::Node::Nop->new;
+    $class->statements([ map {
+        $_->to_js_ast($context->clone($class))
+    } @{$self->statements || []} ]);
+
+    return $class;
 }
 
 1;

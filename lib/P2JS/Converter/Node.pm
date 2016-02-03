@@ -5,16 +5,12 @@ use warnings;
 use parent qw(Compiler::Parser::Node);
 
 use P2JS::Converter::Node::ArrayRef;
+use P2JS::Node::Nop;
 use Data::Dumper;
 
 sub new {
     my ($class, %args) = @_;
     return bless \%args, $class;
-}
-
-sub next {
-    my ($self) = @_;
-    return $self->{next} // P2JS::Converter::Node::Nop->new;
 }
 
 sub is_nop {
@@ -25,7 +21,7 @@ sub is_nop {
 sub to_js_ast {
     my ($self) = @_;
     warn "\033[32m not implemented: " . ref ($self) . " \033[0m";
-    return undef;
+    return P2JS::Node::Nop->new;
 }
 
 sub search {
@@ -100,7 +96,6 @@ sub shift_comma_branch {
     };
 }
 
-# P2JS::Converter::Node::Block
 # P2JS::Converter::Node::CodeDereference
 # P2JS::Converter::Node::Handle
 # P2JS::Converter::Node::HandleRead

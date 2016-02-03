@@ -1,7 +1,7 @@
 package P2JS::Converter::Node::ForStmt;
 use strict;
 use warnings;
-use parent 'P2JS::Converter::Node';
+use parent 'P2JS::Converter::Node::BlockStmt';
 
 use P2JS::Converter::Node::Nop;
 
@@ -10,7 +10,6 @@ use P2JS::Node::ForStmt;
 sub init { shift->{init} // P2JS::Converter::Node::Nop->new; }
 sub cond { shift->{cond} // P2JS::Converter::Node::Nop->new; }
 sub progress { shift->{progress} // P2JS::Converter::Node::Nop->new; }
-sub true_stmt { shift->{true_stmt} // P2JS::Converter::Node::Nop->new; }
 
 sub to_js_ast {
     my ($self, $context) = @_;
@@ -19,8 +18,7 @@ sub to_js_ast {
         init  => $self->init->to_js_ast($context),
         cond  => $self->cond->to_js_ast($context),
         progress => $self->progress->to_js_ast($context),
-        true_stmt => $self->true_stmt->to_js_ast($context),
-        next => $self->next->to_js_ast($context),
+        statements => [ map { $_->to_js_ast($context) } @{$self->statements} ],
     );
 }
 

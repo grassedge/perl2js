@@ -34,7 +34,6 @@ sub to_js_ast {
             }, 'Compiler::Lexer::Token')
         )->to_js_ast($context),
         key   => $key->to_js_ast($context),
-        next  => $self->next->to_js_ast($context),
     );
 }
 

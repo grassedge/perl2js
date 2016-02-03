@@ -92,7 +92,6 @@ sub to_js_ast {
 
     return P2JS::Node::Leaf->new(
         token => $self->token,
-        next  => $self->next->to_js_ast($context),
     );
 }
 
