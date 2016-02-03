@@ -22,8 +22,6 @@ sub to_javascript {
         $self->left->to_javascript($depth),
         $self->token->data,
         $self->right->to_javascript($depth),
-        ($self->next->is_nop ? () : (";\n" . $self->indent($depth))),
-        $self->next->to_javascript($depth),
     );
 }
 

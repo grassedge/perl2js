@@ -17,9 +17,6 @@ sub to_javascript {
     return (
         "import ",
         $self->token->data,
-        ";\n",
-        ($self->next->is_nop ? () : (";\n" . $self->indent($depth))),
-        $self->next->to_javascript($depth),
     );
 }
 

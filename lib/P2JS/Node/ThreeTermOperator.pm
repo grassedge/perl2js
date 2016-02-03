@@ -29,8 +29,6 @@ sub to_javascript {
         $self->true_expr->to_javascript($depth),
         " : ",
         $self->false_expr->to_javascript($depth),
-        ($self->next->is_nop ? () : (";\n" . $self->indent($depth))),
-        $self->next->to_javascript($depth),
     );
 }
 

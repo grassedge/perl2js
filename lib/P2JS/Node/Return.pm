@@ -1,8 +1,11 @@
+# TODO: this package is not BlockStmt.
+# field 'body' is used as statements in C::P::Node::Function.
+
 package P2JS::Node::Return;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node);
+use parent qw(P2JS::Node::BlockStmt);
 
 use P2JS::Node::Nop;
 
@@ -15,9 +18,7 @@ sub to_javascript {
     my ($self, $depth) = @_;
     return (
         'return ',
-        $self->body->to_javascript($depth),
-        ($self->next->is_nop ? () : (";\n" . $self->indent($depth))),
-        $self->next->to_javascript($depth),
+        ($self->statements->[0] || P2JS::Node::Nop->new)->to_javascript($depth + 1)
     );
 }
 

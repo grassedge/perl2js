@@ -10,8 +10,6 @@ sub expr { shift->{expr} }
 sub to_js_ast {
     my ($self, $context) = @_;
     my $name = $self->token->name;
-    # if ($name eq )
-    $self->expr->{next} = $self->next;
     return (
         $self->expr->to_js_ast($context)
     );

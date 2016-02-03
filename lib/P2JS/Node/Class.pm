@@ -2,33 +2,35 @@ package P2JS::Node::Class;
 
 use strict;
 use warnings;
-use parent qw(P2JS::Node);
+use parent qw(P2JS::Node::Block);
 
 use P2JS::Node::Nop;
-
-sub body {
-    my ($self) = @_;
-    return $self->{body} // P2JS::Node::Nop->new;
-}
 
 sub to_javascript {
     my ($self, $depth) = @_;
     return (
-        "class ", $self->token->data,
-        ($self->{super_class} ? (" extends ", $self->{super_class}) : ()),
-        " {\n",
-        ($self->body->is_nop ?
-         () :
-         ($self->indent($depth + 1),
-          $self->body->to_javascript($depth + 1),
-          "\n",
-         )
-        ),
+        "var ", $self->token->data, " = (function() {\n",
+        $self->indent($depth + 1),
+        "var ", $self->token->data, " = {\n",
+        # ($self->{super_class} ? (" extends ", $self->{super_class}) : ()),
+        # " {\n",
+        (join "", map {
+            $self->indent($depth + 2),
+            join('', $_->to_javascript($depth + 2)),
+            ",\n",
+         } grep {
+             $_->isa('P2JS::Node::Method')
+         } @{$self->statements}),
+        $self->indent($depth + 1), "}\n",
+        $self->sentences_to_javascript($depth + 1, [ grep {
+             !$_->isa('P2JS::Node::Nop') &&
+             !$_->isa('P2JS::Node::Method')
+         } @{$self->statements} ]),
+        $self->indent($depth + 1),
+        "return ", $self->token->data, ";\n",
         $self->indent($depth),
-        "}\n",
+        "})();\n",
         "export { " . $self->token->data . " }\n",
-        ($self->next->is_nop ? () : ($self->indent($depth))),
-        $self->next->to_javascript($depth),
     );
 }
 

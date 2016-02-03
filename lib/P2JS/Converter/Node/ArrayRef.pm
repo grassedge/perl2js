@@ -14,7 +14,6 @@ sub to_js_ast {
     return P2JS::Node::ArrayLiteral->new(
         token => $self->token,
         data  => $self->data_node->to_js_ast($context),
-        next  => $self->next->to_js_ast($context),
     );
 }
 

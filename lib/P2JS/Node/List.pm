@@ -15,8 +15,6 @@ sub to_javascript {
     my ($self, $depth) = @_;
     return (
         $self->data_node->to_javascript($depth),
-        ($self->next->is_nop ? () : (";\n" . $self->indent($depth))),
-        $self->next->to_javascript($depth),
     );
 }
 

@@ -2,34 +2,44 @@ package P2JS::Context;
 
 sub new {
     my ($class, %args) = @_;
-    $args{imports} //= [];
-    $args{classes} //= [];
     return bless \%args, $class;
 }
 
-sub imports {
-    my ($self) = @_;
-    return $self->{imports};
+sub clone {
+    my ($self, $current_block) = @_;
+    my $class = ref($self);
+    return bless({
+        %$self,
+        current_block => $current_block,
+    }, $class);
 }
 
-sub push_import {
-    my ($self, $import) = @_;
-    push @{$self->{imports}}, $import;
-}
-
-sub classes {
-    my ($self) = @_;
-    return $self->{classes};
-}
-
-sub push_class {
-    my ($self, $class) = @_;
-    push @{$self->{classes}}, $class;
+sub root {
+    my ($self, $root) = @_;
+    if ($root) {
+        $self->{root} = $root;
+        $self->current_block($root);
+    } else {
+        return $self->{root};
+    }
 }
 
 sub current_class {
-    my ($self) = @_;
-    return $self->classes->[-1];
+    my ($self, $current_class) = @_;
+    if ($current_class) {
+        $self->{current_class} = $current_class;
+    } else {
+        return $self->{current_class};
+    }
+}
+
+sub current_block {
+    my ($self, $current_block) = @_;
+    if ($current_block) {
+        $self->{current_block} = $current_block;
+    } else {
+        return $self->{current_block};
+    }
 }
 
 1;

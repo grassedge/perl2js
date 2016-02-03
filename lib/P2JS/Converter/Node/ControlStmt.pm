@@ -3,8 +3,6 @@ use strict;
 use warnings;
 use parent 'P2JS::Converter::Node';
 
-use P2JS::Converter::Node::Nop;
-
 use P2JS::Node::ControlStmt;
 
 sub to_js_ast {
@@ -19,7 +17,6 @@ sub to_js_ast {
     }
     return P2JS::Node::ControlStmt->new(
         token => $self->token,
-        next  => $self->next->to_js_ast($context),
     );
 }
 

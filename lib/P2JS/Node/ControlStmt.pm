@@ -10,8 +10,6 @@ sub to_javascript {
     my ($self, $depth) = @_;
     return (
         $self->token->data,
-        ($self->next->is_nop ? () : (";\n" . $self->indent($depth))),
-        $self->next->to_javascript($depth),
     );
 }
 
