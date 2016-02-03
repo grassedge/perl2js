@@ -4,7 +4,7 @@
       "hatz48 <hatz48@hatena.ne.jp>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v3.0.1, CPAN::Meta::Converter version 2.150001",
+   "generated_by" : "Minilla/v3.0.1, CPAN::Meta::Converter version 2.143240",
    "license" : [
       "perl_5"
    ],
@@ -42,16 +42,31 @@
       },
       "runtime" : {
          "requires" : {
+            "Compiler::Lexer" : "0",
+            "Compiler::Parser" : "0",
             "perl" : "5.008001"
          }
       },
       "test" : {
          "requires" : {
+            "Test::Class" : "0",
+            "Test::Fatal" : "0",
             "Test::More" : "0.98"
          }
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/hatz48/perl2js/issues"
+      },
+      "homepage" : "https://github.com/hatz48/perl2js",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/hatz48/perl2js.git",
+         "web" : "https://github.com/hatz48/perl2js"
+      }
+   },
    "version" : "0.01",
    "x_authority" : "cpan:HATZ"
 }
